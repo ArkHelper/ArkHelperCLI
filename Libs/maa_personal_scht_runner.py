@@ -78,7 +78,9 @@ def run_personal_scht_tasks(asst, global_config, config):
         'shopping': True,
         'buy_first': [
             '招聘许可',
-            '赤金'
+            '固源岩',
+            '源岩',
+            '装置'
         ],
         'blacklist': [
             '加急许可'

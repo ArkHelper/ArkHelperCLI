@@ -1,7 +1,9 @@
 import json
 import pathlib
 import time
+import sys
 import os
+import logging
 
 from RuntimeComponents.MAA.Python.asst.asst import Asst
 from RuntimeComponents.MAA.Python.asst.utils import Message, Version, InstanceOptionType
@@ -13,6 +15,9 @@ from Libs.maa_util import asst_callback
 from Libs.maa_initer import init
 from Libs.utils import read_config
 
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s [%(levelname)s] %(message)s')
+logger = logging.getLogger()
 
 if __name__ == "__main__":
 
@@ -20,6 +25,10 @@ if __name__ == "__main__":
     current_path = pathlib.Path(__file__, "../")
     global_config = read_config(current_path, 'global')
     personal_config = read_config(current_path, 'personal')
+
+    logger.info(f"start up at {current_path} with")
+    logger.info(f"global config {global_config}")
+    logger.info(f"personal config {personal_config}")
 
     asst = init(current_path / 'RuntimeComponents' / 'MAA', asst_callback)
 
