@@ -1,0 +1,24 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "client_type": {
+                "type": "string"
+            },
+            "account_name": { 
+                "type": "string"
+            },
+            "drones": {
+                "type": "string"
+            },
+            "stage": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+        ]
+    }
+}
