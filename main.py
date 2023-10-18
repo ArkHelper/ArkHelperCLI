@@ -16,14 +16,16 @@ from Libs.maa_util import asst_callback
 from Libs.maa_initer import init
 from Libs.utils import read_config
 
+current_path = pathlib.Path(__file__, "../")
+
 logging.basicConfig(level=logging.DEBUG,
+                    filename=str(current_path / 'Log' / 'log.log'),
+                    encoding='utf-8',
                     format='%(asctime)s [%(levelname)s] %(message)s')
 logger = logging.getLogger()
 
 
 if __name__ == "__main__":
-    # 存放 dll 文件及资源的路径
-    current_path = pathlib.Path(__file__, "../")
     global_config = read_config(current_path, 'global')
     personal_config = read_config(current_path, 'personal')
 
