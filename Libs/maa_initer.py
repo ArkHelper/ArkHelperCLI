@@ -1,5 +1,5 @@
-from RuntimeComponents.MAA.Python.asst.asst import Asst
-from RuntimeComponents.MAA.Python.asst.utils import Message, Version, InstanceOptionType
+from Libs.MAA.asst.asst import Asst
+from Libs.MAA.asst.utils import Message, Version, InstanceOptionType
 
 import ctypes
 import pathlib
