@@ -1,7 +1,9 @@
 import time
+import logging
 
 
 def run_personal_scht_tasks(asst, global_config, config):
+    logging.info(f'started scht task with user {config.get("client_type", "Official")}:{config.get("account_name", "")}')
     asst.append_task('StartUp', {
         "enable": True,
         "client_type": config.get("client_type", 'Official'),

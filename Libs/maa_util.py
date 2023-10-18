@@ -9,4 +9,4 @@ def asst_callback(msg, details, arg):
     m = Message(msg)
     d = json.loads(details.decode('utf-8'))
 
-    logging.info(f'got callback:{m},{arg},{d}')
+    logging.debug(f'got callback:{m},{arg},{d}')
