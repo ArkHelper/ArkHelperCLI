@@ -7,13 +7,16 @@
             "client_type": {
                 "type": "string"
             },
-            "account_name": { 
+            "account_name": {
                 "type": "string"
             },
             "drones": {
                 "type": "string"
             },
             "stage": {
+                "type": "string"
+            },
+            "device": {
                 "type": "string"
             }
         },

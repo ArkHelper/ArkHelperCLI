@@ -6,7 +6,12 @@ from Libs.MAA.asst.utils import Message
 
 @Asst.CallBackType
 def asst_callback(msg, details, arg):
-    m = Message(msg)
-    d = json.loads(details.decode('utf-8'))
+    try:
+        m = Message(msg)
+        d = json.loads(details.decode('utf-8'))
+        logging.debug(f'got callback from asst inst: {m},{arg},{d}')
+    except:
+        pass
 
-    logging.debug(f'got callback:{m},{arg},{d}')
+def asst_tostr(emulator_address):
+    return f"asst instance({emulator_address})"

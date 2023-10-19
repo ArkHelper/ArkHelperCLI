@@ -3,9 +3,10 @@ from Libs.MAA.asst.utils import Message, Version, InstanceOptionType
 
 import ctypes
 import pathlib
+import logging
 
 
-def init(path, callback: Asst.CallBackType):
+def init(path):
     # Updater(path, Version.Stable).update()
 
     # 加载 dll 及资源
@@ -15,13 +16,15 @@ def init(path, callback: Asst.CallBackType):
     #     Asst.load(path=path, incremental_path=path / 'resource' / 'global' / 'YoStarEN')
     # 2. 加载活动关导航（需额外下载）：
     # 下载活动关导航
-    import urllib.request
-    ota_tasks_url = 'https://ota.maa.plus/MaaAssistantArknights/api/resource/tasks.json'
-    ota_tasks_path = path / 'cache' / 'resource' / 'tasks.json'
-    ota_tasks_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(ota_tasks_path, 'w', encoding='utf-8') as f:
-        with urllib.request.urlopen(ota_tasks_url) as u:
-            f.write(u.read().decode('utf-8'))
+    #import urllib.request
+    #ota_tasks_url = 'https://ota.maa.plus/MaaAssistantArknights/api/resource/tasks.json'
+    #ota_tasks_path = path / 'cache' / 'resource' / 'tasks.json'
+    #ota_tasks_path.parent.mkdir(parents=True, exist_ok=True)
+    #with open(ota_tasks_path, 'w', encoding='utf-8') as f:
+    #    with urllib.request.urlopen(ota_tasks_url) as u:
+    #        f.write(u.read().decode('utf-8'))
+#
+    #logging.info(f"asst tasks uploaded")
 
     # 加载
     Asst.load(path=path, incremental_path=path /
@@ -29,10 +32,4 @@ def init(path, callback: Asst.CallBackType):
     Asst.load(path=path, incremental_path=path / 'cache')
     Asst.load(path=path)
 
-    asst = Asst(callback)
-
-    # 设置额外配置
-    # 触控方案配置
-    asst.set_instance_option(InstanceOptionType.touch_type, 'maatouch')
-
-    return asst
+    logging.info(f"asst resource and lib loaded")

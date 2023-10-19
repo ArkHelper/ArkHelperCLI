@@ -1,6 +1,8 @@
 import json
 import pathlib
 import logging
+import psutil
+import os
 from jsonschema import validate
 
 
@@ -20,5 +22,8 @@ def get_logging_handlers(current_path):
 
     # 创建一个控制台处理程序，用于将日志输出到控制台
     console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.DEBUG)
+    console_handler.setLevel(logging.INFO)
     return [file_handler, console_handler]
+
+def kill_processes_by_name(process_name):
+    os.system(f'taskkill /F /IM {process_name}')

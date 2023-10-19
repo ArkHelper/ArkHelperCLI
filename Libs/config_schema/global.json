@@ -2,12 +2,31 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
     "properties": {
-        "emulator_address": {
-            "type": "string"
+        "devices": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "emulator_address": {
+                        "type": "string"
+                    },
+                    "adb_path": {
+                        "type": "string"
+                    },
+                    "start_path": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "emulator_address",
+                    "adb_path"
+                ]
+            }
         }
     },
     "additionalProperties": false,
     "required": [
-        "emulator_address"
+        "devices"
     ]
 }
