@@ -1,7 +1,9 @@
+from concurrent.futures import thread
 import json
 import pathlib
 import logging
 import psutil
+import threading
 import os
 from jsonschema import validate
 
@@ -27,3 +29,9 @@ def get_logging_handlers(current_path):
 
 def kill_processes_by_name(process_name):
     os.system(f'taskkill /F /IM {process_name}')
+
+def init_thread_lock():
+    ret={}
+    ret['list'] = threading.Lock()
+    ret['asst'] = threading.Lock()
+    return ret

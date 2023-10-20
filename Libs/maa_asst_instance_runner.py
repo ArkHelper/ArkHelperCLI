@@ -9,8 +9,9 @@ import time
 import pathlib
 
 
-def run_and_init_asst_inst(dev, global_config, personal_config):
-    lock = threading.Lock()
+def run_and_init_asst_inst(dev, global_config, personal_config, lock_dict:dict[str,threading.Lock]):
+    asst_lock = lock_dict['asst']
+    list_lock = lock_dict['list']
 
     adb_path = os.path.abspath(dev["adb_path"])
     start_path = dev["start_path"]
@@ -30,7 +31,7 @@ def run_and_init_asst_inst(dev, global_config, personal_config):
                 if pc.get("device") == match
             ]
             pass
-        with lock:
+        with list_lock:
             avals_in_match_device = search_ls(emulator_addr)
             if (len(avals_in_match_device) == 0):
                 avals = search_ls(None)
@@ -46,7 +47,7 @@ def run_and_init_asst_inst(dev, global_config, personal_config):
         if p_config is None:
             break
 
-        with lock:
+        with list_lock:
             personal_config.remove(p_config)
 
         execStarted = False
@@ -74,8 +75,11 @@ def run_and_init_asst_inst(dev, global_config, personal_config):
         add_personal_scht_tasks_to_inst(asst, global_config, p_config)
 
         asst.start()
-        while asst.running():
-            time.sleep(1)
+        while True:
+            with asst_lock:
+                if not asst.running():
+                    break
+            time.sleep(5)
 
     logging.info(
         f"{asst_tostr(emulator_addr)} done all available tasks and this thread safely exit")

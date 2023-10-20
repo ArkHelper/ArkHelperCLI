@@ -12,7 +12,7 @@ from Libs.maa_asst_instance_runner import run_and_init_asst_inst
 from Libs.skland_auto_sign_runner import run_auto_sign
 from Libs.maa_util import asst_callback
 from Libs.maa_initer import init
-from Libs.utils import read_config, get_logging_handlers,kill_processes_by_name
+from Libs.utils import read_config, get_logging_handlers,kill_processes_by_name,init_thread_lock
 
 current_path = pathlib.Path(__file__, "../")
 
@@ -33,13 +33,15 @@ async def main():
     logging.info(f"with personal config {personal_config}")
 
     init(current_path / 'RuntimeComponents' / 'MAA')
+    
+    lock = init_thread_lock()
 
     # run_auto_sign(current_path)
 
     async_task_ls = []
     for dev in global_config.get("devices"):
         task = asyncio.to_thread(
-            run_and_init_asst_inst, dev, global_config, personal_config)
+            run_and_init_asst_inst, dev, global_config, personal_config, lock)
         async_task_ls.append(task)
 
     await asyncio.gather(*async_task_ls)
