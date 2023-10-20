@@ -20,7 +20,7 @@ current_path = pathlib.Path(__file__, "../")
 logging.basicConfig(level=logging.DEBUG,
                     # filename=str(current_path / 'Log' / 'log.log'),
                     # encoding='utf-8',
-                    #handlers=get_logging_handlers(current_path), #TODO:logging有线程安全问题写入文件可能会导致致命错误找个时间替换掉
+                    handlers=get_logging_handlers(current_path), 
                     format='%(asctime)s[%(levelname)s] %(message)s')
 
 
