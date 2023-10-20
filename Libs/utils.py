@@ -24,7 +24,7 @@ def get_logging_handlers(current_path):
 
     # 创建一个控制台处理程序，用于将日志输出到控制台
     console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.INFO)
+    console_handler.setLevel(logging.DEBUG)
     return [file_handler, console_handler]
 
 def kill_processes_by_name(process_name):

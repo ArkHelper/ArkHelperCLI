@@ -11,8 +11,8 @@ from Libs.maa_personal_scht_runner import add_personal_scht_tasks_to_inst
 from Libs.maa_asst_instance_runner import run_and_init_asst_inst
 from Libs.skland_auto_sign_runner import run_auto_sign
 from Libs.maa_util import asst_callback
-from Libs.maa_initer import init
-from Libs.utils import read_config, get_logging_handlers,kill_processes_by_name,init_thread_lock
+from Libs.maa_initer import init, load
+from Libs.utils import read_config, get_logging_handlers, kill_processes_by_name, init_thread_lock
 
 current_path = pathlib.Path(__file__, "../")
 
@@ -20,7 +20,7 @@ current_path = pathlib.Path(__file__, "../")
 logging.basicConfig(level=logging.DEBUG,
                     # filename=str(current_path / 'Log' / 'log.log'),
                     # encoding='utf-8',
-                    handlers=get_logging_handlers(current_path), 
+                    handlers=get_logging_handlers(current_path),
                     format='%(asctime)s[%(levelname)s] %(message)s')
 
 
@@ -32,24 +32,30 @@ async def main():
     logging.info(f"with global config {global_config}")
     logging.info(f"with personal config {personal_config}")
 
-    init(current_path / 'RuntimeComponents' / 'MAA')
-    
+    # init(current_path / 'RuntimeComponents' / 'MAA')
+    load(path=current_path / 'RuntimeComponents' / 'MAA')
+
     lock = init_thread_lock()
 
     # run_auto_sign(current_path)
 
     async_task_ls = []
-    for dev in global_config.get("devices"):
-        task = asyncio.to_thread(
-            run_and_init_asst_inst, dev, global_config, personal_config, lock)
-        async_task_ls.append(task)
+    if (False):
+        for dev in global_config.get("devices"):
+            task = asyncio.to_thread(
+                run_and_init_asst_inst, dev, global_config, personal_config, lock)
+            async_task_ls.append(task)
 
-    await asyncio.gather(*async_task_ls)
+        await asyncio.gather(*async_task_ls)
+    else:
+        for dev in global_config.get("devices"):
+            run_and_init_asst_inst(
+                dev, global_config, personal_config, lock, current_path)
 
     kill_processes_by_name("MuMuVMMHeadless.exe")
 
     logging.info(f"everything completed. exit")
-    
+
 
 if __name__ == "__main__":
     asyncio.run(main())

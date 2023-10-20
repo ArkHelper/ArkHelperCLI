@@ -1,6 +1,7 @@
 from Libs.maa_util import asst_callback, asst_tostr
 from Libs.MAA.asst.asst import Asst
 from Libs.maa_personal_scht_runner import add_personal_scht_tasks_to_inst
+from Libs.maa_initer import load
 
 import threading
 import logging
@@ -9,7 +10,7 @@ import time
 import pathlib
 
 
-def run_and_init_asst_inst(dev, global_config, personal_config, lock_dict:dict[str,threading.Lock]):
+def run_and_init_asst_inst(dev, global_config, personal_config, lock_dict: dict[str, threading.Lock], curr_path):
     asst_lock = lock_dict['asst']
     list_lock = lock_dict['list']
 
@@ -49,6 +50,9 @@ def run_and_init_asst_inst(dev, global_config, personal_config, lock_dict:dict[s
 
         with list_lock:
             personal_config.remove(p_config)
+
+        load(curr_path / 'RuntimeComponents' / 'MAA',
+             p_config.get("client_type", "Official"))
 
         execStarted = False
         if not connected:
