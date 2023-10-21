@@ -1,9 +1,12 @@
+import var
+
 import subprocess
 import os
 import logging
 
 
-def run_auto_sign(current_path):
+def run_auto_sign():
+    current_path = var.cli_env
     logging.info("skland auto sign started, the following is the output of the program:")
 
     # 使用subprocess运行，并将标准输出重定向到PIPE
