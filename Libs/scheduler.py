@@ -39,5 +39,8 @@ async def start_scheduler():
                 run_auto_sign()
             if "maa" in _task:
                 await run_all_tasks()
+        else:
+            logging.debug(
+                f"cur time is {cur} and task time is {next_time}. task {next_task} is waiting")
 
         time.sleep(10)
