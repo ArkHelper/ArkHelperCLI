@@ -4,14 +4,27 @@
     // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
-            "name": "启动CLI调试",
+            "name": "启动CLI调试（正常模式）",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/main.py",
             "console": "integratedTerminal",
             "args": [
                 "-v"
+            ],
+            "justMyCode": true
+        },
+        {
+            "name": "启动CLI调试（进入test函数）",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+            "console": "integratedTerminal",
+            "args": [
+                "-v",
+                "-t"
             ],
             "justMyCode": true
         }

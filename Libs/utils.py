@@ -7,7 +7,19 @@ import os
 
 import var
 from jsonschema import validate
-from concurrent.futures import thread
+from datetime import datetime
+
+
+def get_cur_time_f():
+    # 获取当前时间
+    current_time = datetime.now()
+
+    # 获取当前的小时和分钟部分
+    current_hour = current_time.hour
+    current_minute = current_time.minute
+
+    # 将小时和分钟拼接成字符串
+    return current_hour*100+current_minute
 
 
 def read_config_and_validate(config_name):
@@ -19,7 +31,7 @@ def read_config_and_validate(config_name):
             return json_data
 
 
-def get_logging_handlers(file_level,console_level):
+def get_logging_handlers(file_level, console_level):
     file_handler = logging.FileHandler(
         str(var.cli_env / 'Log' / 'log.log'), encoding='utf-8')
     file_handler.setLevel(file_level)

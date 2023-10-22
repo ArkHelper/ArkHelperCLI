@@ -23,10 +23,37 @@
                     "adb_path"
                 ]
             }
+        },
+        "plan": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "time": {
+                        "type": "integer"
+                    },
+                    "task": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "enum": [
+                                "skland",
+                                "maa"
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "time",
+                    "task"
+                ]
+            }
         }
     },
     "additionalProperties": false,
     "required": [
-        "devices"
+        "devices",
+        "plan"
     ]
 }

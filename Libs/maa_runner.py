@@ -1,5 +1,5 @@
 from Libs.MAA.asst.asst import Asst
-from Libs.maa_util import asst_callback, asst_tostr, load_res
+from Libs.maa_util import asst_callback, asst_tostr, load_res,update_nav
 import var
 
 import threading
@@ -11,6 +11,8 @@ import pathlib
 
 
 async def run_all_tasks():
+    update_nav()
+    
     async_enabled = False
 
     if async_enabled:
@@ -88,7 +90,7 @@ def add_personal_tasks(asst, config):
             3,
             4
         ],
-        'times': 3,
+        'times': 1,
         'set_time': True,
         'expedite': False,
         'expedite_times': 3,
