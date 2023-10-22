@@ -19,13 +19,13 @@ def read_config_and_validate(config_name):
             return json_data
 
 
-def get_logging_handlers():
+def get_logging_handlers(file_level,console_level):
     file_handler = logging.FileHandler(
         str(var.cli_env / 'Log' / 'log.log'), encoding='utf-8')
-    file_handler.setLevel(logging.DEBUG)
+    file_handler.setLevel(file_level)
 
     console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.DEBUG)
+    console_handler.setLevel(console_level)
 
     return [file_handler, console_handler]
 

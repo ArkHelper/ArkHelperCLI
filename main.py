@@ -1,9 +1,5 @@
-import json
-from math import fabs
 import pathlib
-import time
 import sys
-import os
 import logging
 import asyncio
 import threading
@@ -21,11 +17,10 @@ var.lock = {'list': threading.Lock(), 'asst': threading.Lock()}
 var.global_config = read_config_and_validate("global")
 var.personal_configs = read_config_and_validate("personal")
 
-
 logging.basicConfig(level=logging.DEBUG,
                     # filename=str(current_path / "Log" / "log.log"),
                     # encoding="utf-8",
-                    handlers=get_logging_handlers(),
+                    handlers=get_logging_handlers(logging.DEBUG,logging.DEBUG if "-v" in sys.argv or "--verbose" in sys.argv else logging.INFO),
                     format="%(asctime)s[%(levelname)s] %(message)s")
 
 
@@ -40,6 +35,4 @@ async def main():
 
     logging.info(f"everything completed. exit")
 
-
-if __name__ == "__main__":
-    asyncio.run(main())
+asyncio.run(main())
