@@ -16,11 +16,10 @@ var.asst_res_lib_env = var.cli_env / "RuntimeComponents" / "MAA"
 var.lock = {'list': threading.Lock(), 'asst': threading.Lock()}
 var.global_config = read_config_and_validate("global")
 var.personal_configs = read_config_and_validate("personal")
+var.verbose = "-v" in sys.argv or "--verbose" in sys.argv
 
 logging.basicConfig(level=logging.DEBUG,
-                    # filename=str(current_path / "Log" / "log.log"),
-                    # encoding="utf-8",
-                    handlers=get_logging_handlers(logging.DEBUG,logging.DEBUG if "-v" in sys.argv or "--verbose" in sys.argv else logging.INFO),
+                    handlers=get_logging_handlers(logging.DEBUG,logging.DEBUG if var.verbose else logging.INFO),
                     format="%(asctime)s[%(levelname)s] %(message)s")
 
 
