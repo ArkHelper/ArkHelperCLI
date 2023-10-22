@@ -3,13 +3,31 @@ from Libs.maa_util import asst_callback, asst_tostr, load_res
 import var
 
 import threading
+import asyncio
 import logging
 import os
 import time
 import pathlib
 
 
-def add_personal_scht_tasks_to_inst(asst, config):
+async def run_all_tasks():
+    async_enabled = False
+
+    if async_enabled:
+        async_task_ls = []
+        for dev in var.global_config["devices"]:
+            task = asyncio.to_thread(
+                run_task_per_dev, dev)
+            async_task_ls.append(task)
+        await asyncio.gather(*async_task_ls)
+    else:
+        for dev in var.global_config["devices"]:
+            run_task_per_dev(dev)
+
+    # kill_processes_by_name("MuMuVMMHeadless.exe")
+
+
+def add_personal_tasks(asst, config):
     logging.info(
         f'started scht task with user {config.get("client_type", "Official")}:{config.get("account_name", "")}')
     asst.append_task('StartUp', {
@@ -103,7 +121,7 @@ def add_personal_scht_tasks_to_inst(asst, config):
     })
 
 
-def run_and_init_asst_inst(dev):
+def run_task_per_dev(dev):
 
     def get_aval_task():
         def search_ls(match):
@@ -176,7 +194,7 @@ def run_and_init_asst_inst(dev):
 
         connected = True
 
-        add_personal_scht_tasks_to_inst(asst, current_task_personal_config)
+        add_personal_tasks(asst, current_task_personal_config)
 
         asst.start()
         while True:

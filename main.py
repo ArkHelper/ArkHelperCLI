@@ -10,11 +10,9 @@ import threading
 
 import var
 
-from Libs.MAA.asst.asst import Asst
-from Libs.maa_asst_instance_runner import run_and_init_asst_inst
+from Libs.maa_runner import run_all_tasks
 from Libs.skland_auto_sign_runner import run_auto_sign
-from Libs.utils import read_config_and_validate, get_logging_handlers, kill_processes_by_name
-
+from Libs.utils import read_config_and_validate, get_logging_handlers
 
 
 var.cli_env = pathlib.Path(__file__, "../")
@@ -40,23 +38,8 @@ async def main():
     logging.info(f"with personal config {var.personal_configs}")
 
     # load_res()
+    await run_all_tasks()
     # run_auto_sign(current_path)
-
-    async_enabled = False
-
-    if False:
-        async_task_ls = []
-        for dev in var.global_config.get("devices"):
-            task = asyncio.to_thread(
-                run_and_init_asst_inst, dev, global_config, personal_config, lock)
-            async_task_ls.append(task)
-
-        await asyncio.gather(*async_task_ls)
-    else:
-        for dev in var.global_config.get("devices"):
-            run_and_init_asst_inst(dev)
-
-    #kill_processes_by_name("MuMuVMMHeadless.exe")
 
     logging.info(f"everything completed. exit")
 
