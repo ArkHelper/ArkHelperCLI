@@ -34,11 +34,11 @@ def asst_tostr(emulator_address):
 def load_res(client_type: Optional[Union[str, None]] = None):
     incr:pathlib.Path
     if client_type in ["Official", "Bilibili", None]:
-        incr = var.asst_res_lib_env / 'resource' / 'global' / str(client_type)
-    else:
         incr = var.asst_res_lib_env / 'cache'
+    else:
+        incr = var.asst_res_lib_env / 'resource' / 'global' / str(client_type)
         
-    logging.debug(f"asst resource and lib loaded from {var.asst_res_lib_env} and {incr}")
+    logging.debug(f"asst resource and lib loaded from main path {var.asst_res_lib_env} and incremental path {incr}")
     Asst.load(var.asst_res_lib_env, incr)
 
 

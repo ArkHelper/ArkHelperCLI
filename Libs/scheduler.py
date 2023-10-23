@@ -24,23 +24,27 @@ async def start_scheduler():
             'time', 0) > cur), var.global_config["plan"][0])
         next_time = next_task["time"]
 
+        logging.debug(f"scheduler task updated to {next_task}")
+
+    logging.info(f"scheduler started")
     get_next()
+
     while (True):
         cur = get_cur_time_f()
         if (cur == next_time):
-            get_next()
-
             _task = next_task["task"]
 
             logging.info(
-                f"cur time is {cur} and task time is {next_time}. task {_task} is starting")
+                f"cur time is {cur} and task time is {next_time}. scheduler task {_task} is starting")
 
             if "skland" in _task:
                 run_auto_sign()
             if "maa" in _task:
                 await run_all_tasks()
+                
+            get_next()
         else:
             logging.debug(
-                f"cur time is {cur} and task time is {next_time}. task {next_task} is waiting")
+                f"cur time is {cur} and task time is {next_time}. scheduler task {next_task} is waiting")
 
-        time.sleep(10)
+        time.sleep(40)

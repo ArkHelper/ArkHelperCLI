@@ -1,5 +1,6 @@
 from Libs.MAA.asst.asst import Asst
 from Libs.maa_util import asst_callback, asst_tostr, load_res,update_nav
+from Libs.utils import read_config_and_validate
 import var
 
 import threading
@@ -143,6 +144,8 @@ def run_task_per_dev(dev):
                     return avals[0]
             else:
                 return avals_in_match_device[0]
+            
+    var.personal_configs = read_config_and_validate("personal")
 
     asst_lock = var.lock['asst']
     list_lock = var.lock['list']
