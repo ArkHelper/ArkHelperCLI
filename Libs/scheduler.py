@@ -7,6 +7,8 @@ from Libs.utils import get_cur_time_f
 import time
 import var
 
+interval = 40
+
 
 async def start_scheduler():
     var.global_config["plan"] = sorted(
@@ -26,7 +28,7 @@ async def start_scheduler():
 
         logging.debug(f"scheduler task updated to {next_task}")
 
-    logging.info(f"scheduler started")
+    logging.info(f"scheduler started, interval {interval} seconds")
     get_next()
 
     while (True):
@@ -41,10 +43,10 @@ async def start_scheduler():
                 run_auto_sign()
             if "maa" in _task:
                 await run_all_tasks()
-                
+
             get_next()
         else:
             logging.debug(
                 f"cur time is {cur} and task time is {next_time}. scheduler task {next_task} is waiting")
 
-        time.sleep(40)
+        time.sleep(interval)
