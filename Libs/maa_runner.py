@@ -58,7 +58,7 @@ def get_full_tasks(config, defaults):
 
     return {
         "tasks": return_ls,
-        "device": config["device"]
+        "device": config.get("device",None)
     }
 
 
