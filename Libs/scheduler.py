@@ -7,7 +7,7 @@ from Libs.utils import get_cur_time_f
 import time
 import var
 
-interval = 40
+interval = 55
 
 
 async def start_scheduler():
