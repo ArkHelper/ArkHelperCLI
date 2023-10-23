@@ -22,13 +22,18 @@ def get_cur_time_f():
     return current_hour*100+current_minute
 
 
+def read_json(path):
+    with open(str(path), 'r', encoding='utf8') as json_file:
+        data = json.load(json_file)
+        return data
+
+
 def read_config_and_validate(config_name):
-    with open(str(var.cli_env / 'Config' / f'{config_name}.json'), 'r', encoding='utf8')as fp:
-        json_data = json.load(fp)
-        with open(str(var.cli_env / 'Libs' / 'config_schema' / f'{config_name}.json'), 'r', encoding='utf8')as fp1:
-            schema = json.load(fp1)
-            validate(instance=json_data, schema=schema)
-            return json_data
+    json_data = read_json(var.cli_env / 'Config' / f'{config_name}.json')
+    json_schema = read_json(var.cli_env / 'Libs' /
+                            'json' / 'config_schema' / f'{config_name}.json')
+    validate(instance=json_data, schema=json_schema)
+    return json_data
 
 
 def get_logging_handlers(file_level, console_level):

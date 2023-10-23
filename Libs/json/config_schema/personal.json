@@ -4,17 +4,13 @@
     "items": {
         "type": "object",
         "properties": {
-            "client_type": {
-                "type": "string"
-            },
-            "account_name": {
-                "type": "string"
-            },
-            "drones": {
-                "type": "string"
-            },
-            "stage": {
-                "type": "string"
+            "task": {
+                "type": "object",
+                "properties": {
+                },
+                "additionalProperties": true,
+                "required": [
+                ]
             },
             "device": {
                 "type": "string"
