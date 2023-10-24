@@ -1,3 +1,4 @@
+from ast import List
 import pathlib
 import threading
 
@@ -7,3 +8,4 @@ cli_env: pathlib.Path
 asst_res_lib_env: pathlib.Path
 lock: dict[str, threading.Lock]
 verbose: bool
+tasks: list

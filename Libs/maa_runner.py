@@ -13,7 +13,15 @@ import copy
 
 
 async def run_all_devs():
-    #update_nav()
+    update_nav()
+
+    var.tasks = []
+    var.personal_configs = read_config_and_validate("personal")
+    personal_default = read_json(
+        var.cli_env / "Libs" / "json" / "default" / "personal.json")
+    for personal_config in var.personal_configs:
+        var.tasks.append(get_full_tasks(personal_config, personal_default))
+        pass
 
     async_enabled = False
 
@@ -71,20 +79,11 @@ def add_personal_tasks(asst: Asst, config):
 
 
 def run_tasks_by_dev(dev):
-    #TODO: 挪到公共位置，以适配多实例
-    tasks: list = []
-    var.personal_configs = read_config_and_validate("personal")
-    personal_default = read_json(
-        var.cli_env / "Libs" / "json" / "default" / "personal.json")
-    for personal_config in var.personal_configs:
-        tasks.append(get_full_tasks(personal_config, personal_default))
-        pass
-
     def get_aval_task():
         def search_ls(matcher):
             return [
                 task
-                for task in tasks
+                for task in var.tasks
                 if task.get("device") == matcher
             ]
             pass
@@ -116,7 +115,7 @@ def run_tasks_by_dev(dev):
             break
 
         with list_lock:
-            tasks.remove(current_task)
+            var.tasks.remove(current_task)
 
         load_res(
             [
