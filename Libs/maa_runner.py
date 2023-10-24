@@ -12,8 +12,8 @@ import pathlib
 import copy
 
 
-async def run_all_tasks():
-    update_nav()
+async def run_all_devs():
+    #update_nav()
 
     async_enabled = False
 
@@ -21,12 +21,12 @@ async def run_all_tasks():
         async_task_ls = []
         for dev in var.global_config["devices"]:
             task = asyncio.to_thread(
-                run_task_per_dev, dev)
+                run_tasks_by_dev, dev)
             async_task_ls.append(task)
         await asyncio.gather(*async_task_ls)
     else:
         for dev in var.global_config["devices"]:
-            run_task_per_dev(dev)
+            run_tasks_by_dev(dev)
 
     # kill_processes_by_name("MuMuVMMHeadless.exe")
 
@@ -38,45 +38,54 @@ def get_full_tasks(config, defaults):
     for default_task in defaults:
         default_task: dict
 
-        fin_task_config = default_task["task_config"]
-        fin_task_name = default_task["task_name"]
+        fin_task_config = copy.deepcopy(default_task["task_config"])
+        fin_task_name = copy.deepcopy(default_task["task_name"])
 
         fin_task_config.update(tasks.get(fin_task_name, {}))
         return_ls.append({
-            "task_name":fin_task_name,
-            "task_config":fin_task_config
+            "task_name": fin_task_name,
+            "task_config": fin_task_config
         })
 
         # MAA的一个bug，有概率切换账号后无法登录，所以再加个登录Task
-        if fin_task_config.get("account_name", "") != "":
-            another_startup_task_config = copy.deepcopy(fin_task_config)
-            another_startup_task_config["account_name"] = ""
-            return_ls.append({
-                "task_name":fin_task_name,
-                "task_config":another_startup_task_config
-            })
+        if fin_task_name == "StartUp":
+            if fin_task_config.get("account_name", "") != "":
+                another_startup_task_config = copy.deepcopy(fin_task_config)
+                another_startup_task_config["account_name"] = ""
+                return_ls.append({
+                    "task_name": fin_task_name,
+                    "task_config": another_startup_task_config
+                })
 
     return {
-        "tasks": return_ls,
-        "device": config.get("device",None)
+        "task": return_ls,
+        "device": config.get("device", None)
     }
 
 
 def add_personal_tasks(asst: Asst, config):
     logging.info(
         f'append task with config {config}')
-    for task in config["tasks"]:
-        asst.append_task(task["task_name"], task["task_config"])
+    for maa_task in config["task"]:
+        asst.append_task(maa_task["task_name"], maa_task["task_config"])
 
 
-def run_task_per_dev(dev):
+def run_tasks_by_dev(dev):
+    #TODO: 挪到公共位置，以适配多实例
+    tasks: list = []
+    var.personal_configs = read_config_and_validate("personal")
+    personal_default = read_json(
+        var.cli_env / "Libs" / "json" / "default" / "personal.json")
+    for personal_config in var.personal_configs:
+        tasks.append(get_full_tasks(personal_config, personal_default))
+        pass
 
     def get_aval_task():
-        def search_ls(match):
+        def search_ls(matcher):
             return [
-                pc
-                for pc in var.personal_configs
-                if pc.get("device") == match
+                task
+                for task in tasks
+                if task.get("device") == matcher
             ]
             pass
         with list_lock:
@@ -90,10 +99,6 @@ def run_task_per_dev(dev):
             else:
                 return avals_in_match_device[0]
 
-    var.personal_configs = read_config_and_validate("personal")
-    personal_default = read_json(
-        var.cli_env / "Libs" / "json" / "default" / "personal.json")
-
     asst_lock = var.lock['asst']
     list_lock = var.lock['list']
 
@@ -106,22 +111,20 @@ def run_task_per_dev(dev):
     asst_str = None
 
     while (True):
-        current_task_personal_config = get_aval_task()
-        if current_task_personal_config is None:
+        current_task = get_aval_task()
+        if current_task is None:
             break
-        current_task = get_full_tasks(
-            current_task_personal_config, personal_default)
 
         with list_lock:
-            var.personal_configs.remove(current_task_personal_config)
+            tasks.remove(current_task)
 
         load_res(
-                [
-                    task
-                    for task in current_task["tasks"]
-                    if task["task_name"] == "StartUp"
-                ][0]["task_config"]["client_type"]
-            )
+            [
+                maa_task
+                for maa_task in current_task["task"]
+                if maa_task["task_name"] == "StartUp"
+            ][0]["task_config"]["client_type"]
+        )
 
         if asst is None:
             asst = Asst(asst_callback)

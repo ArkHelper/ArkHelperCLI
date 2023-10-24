@@ -8,7 +8,7 @@ import var
 
 from Libs.scheduler import start_scheduler
 from Libs.utils import read_config_and_validate, get_logging_handlers
-from Libs.maa_runner import run_all_tasks
+from Libs.maa_runner import run_all_devs
 from Libs.test import test
 
 

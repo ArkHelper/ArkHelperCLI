@@ -1,7 +1,7 @@
 import logging
 from os import times
 from Libs.skland_auto_sign_runner import run_auto_sign
-from Libs.maa_runner import run_all_tasks
+from Libs.maa_runner import run_all_devs
 from Libs.utils import get_cur_time_f
 
 import time
@@ -42,7 +42,7 @@ async def start_scheduler():
             if "skland" in _task:
                 run_auto_sign()
             if "maa" in _task:
-                await run_all_tasks()
+                await run_all_devs()
 
             get_next()
         else:
