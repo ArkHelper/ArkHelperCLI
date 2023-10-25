@@ -39,9 +39,9 @@
                 "Processing"
             ],
             "drones": "PureGold",
-            "threshold": 0.2,
-            "dorm_notstationed_enabled": true,
-            "dorm_trust_enabled": true,
+            "threshold": 0,
+            "dorm_notstationed_enabled": false,
+            "dorm_trust_enabled": false,
             "replenish": true,
             "mode": 0,
             "filename": "",
@@ -54,13 +54,15 @@
             "refresh": true,
             "force_refresh": true,
             "select": [
-                4
+                4,
+                5
             ],
             "confirm": [
                 3,
-                4
+                4,
+                5
             ],
-            "times": 1,
+            "times": 3,
             "set_time": true,
             "expedite": false,
             "expedite_times": 3,

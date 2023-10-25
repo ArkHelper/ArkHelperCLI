@@ -12,6 +12,9 @@
                 "required": [
                 ]
             },
+            "blacklist": {
+                "type": "array"
+            },
             "device": {
                 "type": "string"
             }

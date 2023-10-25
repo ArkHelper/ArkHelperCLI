@@ -50,20 +50,22 @@ def get_full_tasks(config, defaults):
         fin_task_name = copy.deepcopy(default_task["task_name"])
 
         fin_task_config.update(tasks.get(fin_task_name, {}))
-        return_ls.append({
-            "task_name": fin_task_name,
-            "task_config": fin_task_config
-        })
+        if fin_task_name not in config.get("blacklist", []):
+            return_ls.append({
+                "task_name": fin_task_name,
+                "task_config": fin_task_config
+            })
 
-        # MAA的一个bug，有概率切换账号后无法登录，所以再加个登录Task
-        if fin_task_name == "StartUp":
-            if fin_task_config.get("account_name", "") != "":
-                another_startup_task_config = copy.deepcopy(fin_task_config)
-                another_startup_task_config["account_name"] = ""
-                return_ls.append({
-                    "task_name": fin_task_name,
-                    "task_config": another_startup_task_config
-                })
+            # MAA的一个bug，有概率切换账号后无法登录，所以再加个登录Task
+            if fin_task_name == "StartUp":
+                if fin_task_config.get("account_name", "") != "":
+                    another_startup_task_config = copy.deepcopy(
+                        fin_task_config)
+                    another_startup_task_config["account_name"] = ""
+                    return_ls.append({
+                        "task_name": fin_task_name,
+                        "task_config": another_startup_task_config
+                    })
 
     return {
         "task": return_ls,
@@ -117,13 +119,15 @@ def run_tasks_by_dev(dev):
         with list_lock:
             var.tasks.remove(current_task)
 
-        load_res(
-            [
+        try:
+            server = [
                 maa_task
                 for maa_task in current_task["task"]
                 if maa_task["task_name"] == "StartUp"
             ][0]["task_config"]["client_type"]
-        )
+        except:
+            server = None
+        load_res(server)
 
         if asst is None:
             asst = Asst(asst_callback)
