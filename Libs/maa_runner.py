@@ -158,6 +158,7 @@ def run_tasks_by_dev(dev):
 
                 time.sleep(2)
 
+        time.sleep(15)
         connected = True
 
         add_personal_tasks(asst, current_task)
