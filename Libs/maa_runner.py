@@ -163,10 +163,17 @@ def run_tasks_by_dev(dev):
 
         add_personal_tasks(asst, current_task)
 
+        max_wait_time = 35*60
+
         asst.start()
-        while True:
+        already_wait_time = 0
+        while already_wait_time < max_wait_time:
             if not asst.running():
                 break
+            time.sleep(5)
+            already_wait_time += 5
+        else:
+            asst.stop()
             time.sleep(5)
 
     logging.info(
