@@ -151,7 +151,7 @@ def run_tasks_by_dev(dev):
 
                 # 启动模拟器
                 if not _execStart and start_path is not None:
-                    os.startfile(os.path.abspath(start_path))
+                    os.startfile(os.path.abspath(start_path)) #程序结束后会自动关闭？！
                     _execStart = True
 
                     logging.debug(f"started emulator at {start_path}")
@@ -163,7 +163,7 @@ def run_tasks_by_dev(dev):
 
         add_personal_tasks(asst, current_task)
 
-        max_wait_time = 35*60
+        max_wait_time = 50*60
 
         asst.start()
         already_wait_time = 0
