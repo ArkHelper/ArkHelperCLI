@@ -1,6 +1,6 @@
 from Libs.MAA.asst.asst import Asst
 from Libs.maa_util import asst_callback, asst_tostr, load_res, update_nav
-from Libs.utils import read_config_and_validate, read_json
+from Libs.utils import kill_processes_by_name, read_config_and_validate, read_json
 import var
 
 import threading
@@ -36,7 +36,9 @@ async def run_all_devs():
         for dev in var.global_config["devices"]:
             run_tasks_by_dev(dev)
 
-    # kill_processes_by_name("MuMuVMMHeadless.exe")
+    for process in var.global_config['devices']:
+        for process_name in process['process_name']:
+            kill_processes_by_name(process_name)
 
 
 def get_full_tasks(config, defaults):

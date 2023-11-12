@@ -15,12 +15,16 @@
                     },
                     "start_path": {
                         "type": "string"
+                    },
+                    "process_name": {
+                        "type": "array"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "emulator_address",
-                    "adb_path"
+                    "adb_path",
+                    "process_name"
                 ]
             }
         },

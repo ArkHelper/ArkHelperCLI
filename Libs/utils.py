@@ -3,6 +3,7 @@ import pathlib
 import logging
 import psutil
 import threading
+import subprocess
 import os
 
 import var
@@ -47,5 +48,12 @@ def get_logging_handlers(file_level, console_level):
     return [file_handler, console_handler]
 
 
-def kill_processes_by_name(process_name):
-    os.system(f'taskkill /F /IM {process_name}')
+def kill_processes_by_name(process_name) -> bool:
+    logging.debug(f"killing process {process_name}")
+    try:
+        result = subprocess.run(['taskkill', '/F', '/IM', f'{process_name}.exe'], check=True, capture_output=True, text=True)
+        logging.debug(f"killing result:{result.stdout}")
+        return True
+    except subprocess.CalledProcessError as e:
+        logging.debug(f"killing result:{e.stderr}")
+        return False

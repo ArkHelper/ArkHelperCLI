@@ -36,5 +36,7 @@ async def main():
 
 if "-t" in sys.argv:
     asyncio.run(test())
-else:
+elif "scht" in sys.argv:
     asyncio.run(main())
+elif "run" in sys.argv:
+    asyncio.run(run_all_devs())
