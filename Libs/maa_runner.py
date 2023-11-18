@@ -1,3 +1,8 @@
+from ast import List
+from socket import AI_PASSIVE
+from wsgiref.headers import tspecials
+from jax import devices
+from pyparsing import opAssoc
 from Libs.MAA.asst.asst import Asst
 from Libs.maa_util import asst_callback, asst_tostr, load_res, update_nav
 from Libs.utils import kill_processes_by_name, read_config_and_validate, read_json
@@ -15,33 +20,32 @@ import copy
 async def run_all_devs():
     update_nav()
 
-    var.tasks = []
+    var.task_and_device_manager._tasks = {}
     var.personal_configs = read_config_and_validate("personal")
     personal_default = read_json(
         var.cli_env / "Libs" / "json" / "default" / "personal.json")
     for personal_config in var.personal_configs:
-        var.tasks.append(get_full_tasks(personal_config, personal_default))
+        var.task_and_device_manager.add_task(
+            extend_full_tasks(personal_config, personal_default))
         pass
 
-    async_enabled = False
+    load_res(None)
 
-    if async_enabled:
-        async_task_ls = []
-        for dev in var.global_config["devices"]:
-            task = asyncio.to_thread(
-                run_tasks_by_dev, dev)
-            async_task_ls.append(task)
-        await asyncio.gather(*async_task_ls)
-    else:
-        for dev in var.global_config["devices"]:
-            run_tasks_by_dev(dev)
+    for process in var.global_config['devices']:
+        for process_name in process['process_name']:
+            kill_processes_by_name(process_name)
+
+    for dev in var.global_config["devices"]:
+        var.task_and_device_manager.add_device(Dev(dev))
+
+    var.task_and_device_manager.monitor()
 
     for process in var.global_config['devices']:
         for process_name in process['process_name']:
             kill_processes_by_name(process_name)
 
 
-def get_full_tasks(config, defaults):
+def extend_full_tasks(config, defaults):
     return_ls: list = []
 
     tasks = config["task"]
@@ -82,101 +86,117 @@ def add_personal_tasks(asst: Asst, config):
         asst.append_task(maa_task["task_name"], maa_task["task_config"])
 
 
-def run_tasks_by_dev(dev):
-    def get_aval_task():
-        def search_ls(matcher):
-            return [
-                task
-                for task in var.tasks
-                if task.get("device") == matcher
-            ]
-            pass
-        with list_lock:
-            avals_in_match_device = search_ls(emulator_addr)
-            if (len(avals_in_match_device) == 0):
-                avals = search_ls(None)
-                if (len(avals) == 0):
-                    return None
-                else:
-                    return avals[0]
-            else:
-                return avals_in_match_device[0]
+class Dev:
+    def __init__(self, dev_config) -> None:
+        self._adb_path = os.path.abspath(dev_config["adb_path"])
+        self._start_path = dev_config["start_path"]
 
-    asst_lock = var.lock['asst']
-    list_lock = var.lock['list']
+        self.emulator_addr = dev_config["emulator_address"]
+        self.running_task = None
 
-    adb_path = os.path.abspath(dev["adb_path"])
-    start_path = dev["start_path"]
-    emulator_addr = dev["emulator_address"]
+        self._connected = False
 
-    connected = False
-    asst = None
-    asst_str = None
+        self._asst = Asst(asst_callback)
+        self._asst_str = asst_tostr(self.emulator_addr)
 
-    while (True):
-        current_task = get_aval_task()
-        if current_task is None:
-            break
-
-        with list_lock:
-            var.tasks.remove(current_task)
-
-        try:
-            server = [
-                maa_task
-                for maa_task in current_task["task"]
-                if maa_task["task_name"] == "StartUp"
-            ][0]["task_config"]["client_type"]
-        except:
-            server = None
-        load_res(server)
-
-        if asst is None:
-            asst = Asst(asst_callback)
-            asst_str = asst_tostr(emulator_addr)
-
-            logging.debug(f"{asst_str} inited")
-
-        logging.debug(
-            f"{asst_str} got task {current_task}")
-
-        if not connected:
+        if not self._connected:
             _execStart = False
             while True:
 
                 logging.debug(
-                    f"{asst_str} try to connect {emulator_addr}")
+                    f"{self._asst_str} try to connect {self.emulator_addr}")
 
-                if asst.connect(adb_path, emulator_addr):
-                    logging.debug(f"{asst_str} connected {emulator_addr}")
+                if self._asst.connect(self._adb_path, self.emulator_addr):
+                    logging.debug(
+                        f"{self._asst_str} connected {self.emulator_addr}")
                     break
 
                 # 启动模拟器
-                if not _execStart and start_path is not None:
-                    os.startfile(os.path.abspath(start_path)) #程序结束后会自动关闭？！
+                if not _execStart and self._start_path is not None:
+                    os.startfile(os.path.abspath(
+                        self._start_path))  # 程序结束后会自动关闭？！
                     _execStart = True
 
-                    logging.debug(f"started emulator at {start_path}")
+                    logging.debug(f"started emulator at {self._start_path}")
 
                 time.sleep(2)
 
-        time.sleep(15)
-        connected = True
+            # time.sleep(15)
+            self._connected = True
+        pass
 
-        add_personal_tasks(asst, current_task)
+    def run_task(self, task):
+
+        add_personal_tasks(self._asst, task)
 
         max_wait_time = 50*60
 
-        asst.start()
-        already_wait_time = 0
-        while already_wait_time < max_wait_time:
-            if not asst.running():
-                break
-            time.sleep(5)
-            already_wait_time += 5
-        else:
-            asst.stop()
-            time.sleep(5)
+        self._asst.start()
 
-    logging.info(
-        f"{asst_str} done all available tasks and this thread will safely exit")
+        logging.info(f"{self._asst_str} done task {task}")
+
+
+class TaskAndDeviceManager:
+    _devices: list[Dev] = []
+    _tasks = {}
+
+    def add_device(self, device):
+        self._devices.append(device)
+        pass
+
+    def add_task(self, task):
+        server = [
+            maa_task
+            for maa_task in task["task"]
+            if maa_task["task_name"] == "StartUp"
+        ][0]["task_config"]["client_type"]
+        if server == "Bilibili":
+            server = "Official"
+
+        server_tasks_ls = self._tasks.get(server)
+        if server_tasks_ls is None:
+            self._tasks[server] = [task]
+        else:
+            self._tasks[server].append(task)
+
+    def monitor(self):
+        while (True):
+            if len(self._tasks) != 0:
+                first_key = next(iter(self._tasks.keys()))
+                task_list = self._tasks[first_key]
+                idle_devs = [
+                    dev for dev in self._devices if not dev._asst.running()]
+                for dev in idle_devs:
+                    run_task = None
+
+                    for_this_aval_tasks_matches_addr = [
+                        task for task in task_list if task.get('device') == dev.emulator_addr]
+                    if len(for_this_aval_tasks_matches_addr) == 0:
+                        for_this_aval_tasks = [
+                            task for task in task_list if task.get('device') == None]
+                        if len(for_this_aval_tasks) == 0:
+                            pass
+                        else:
+                            run_task = for_this_aval_tasks[0]
+                    else:
+                        run_task = for_this_aval_tasks_matches_addr[0]
+                        pass
+
+                    if run_task is not None:
+                        dev.run_task(run_task)
+                        task_list.remove(run_task)
+                        pass
+
+                all_dev_is_idle = all(not device._asst.running()
+                                      for device in self._devices)
+                if all_dev_is_idle:
+                    self._tasks.pop(first_key)
+                    first_key = next(iter(self._tasks.keys()))
+                    load_res(first_key)
+                    pass
+            else:
+                break
+
+            time.sleep(2)
+            pass
+    pass

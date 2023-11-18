@@ -8,7 +8,7 @@ import var
 
 from Libs.scheduler import start_scheduler
 from Libs.utils import read_config_and_validate, get_logging_handlers
-from Libs.maa_runner import run_all_devs
+from Libs.maa_runner import TaskAndDeviceManager, run_all_devs
 from Libs.test import test
 
 
@@ -18,6 +18,7 @@ var.lock = {'list': threading.Lock(), 'asst': threading.Lock()}
 var.global_config = read_config_and_validate("global")
 var.personal_configs = read_config_and_validate("personal")
 var.verbose = "-v" in sys.argv or "--verbose" in sys.argv
+var.task_and_device_manager = TaskAndDeviceManager()
 
 logging.basicConfig(level=logging.DEBUG,
                     handlers=get_logging_handlers(
