@@ -1,19 +1,15 @@
-from ast import List
-from socket import AI_PASSIVE
-from wsgiref.headers import tspecials
-from jax import devices
-from pyparsing import opAssoc
+from threading import local
+from typing import Any
+
+from networkx import antichains, node_link_data
 from Libs.MAA.asst.asst import Asst
 from Libs.maa_util import asst_callback, asst_tostr, load_res, update_nav
 from Libs.utils import kill_processes_by_name, read_config_and_validate, read_json
 import var
 
-import threading
-import asyncio
 import logging
 import os
 import time
-import pathlib
 import copy
 
 
@@ -32,13 +28,15 @@ async def run_all_devs():
     load_res(None)
 
     for process in var.global_config['devices']:
-        for process_name in process['process_name']:
-            kill_processes_by_name(process_name)
+       for process_name in process['process_name']:
+           kill_processes_by_name(process_name)
+
+    time.sleep(5)
 
     for dev in var.global_config["devices"]:
-        var.task_and_device_manager.add_device(Dev(dev))
+        var.task_and_device_manager.add_device(Device(dev))
 
-    var.task_and_device_manager.monitor()
+    var.task_and_device_manager.start()
 
     for process in var.global_config['devices']:
         for process_name in process['process_name']:
@@ -86,7 +84,7 @@ def add_personal_tasks(asst: Asst, config):
         asst.append_task(maa_task["task_name"], maa_task["task_config"])
 
 
-class Dev:
+class Device:
     def __init__(self, dev_config) -> None:
         self._adb_path = os.path.abspath(dev_config["adb_path"])
         self._start_path = dev_config["start_path"]
@@ -123,7 +121,9 @@ class Dev:
 
             # time.sleep(15)
             self._connected = True
-        pass
+
+    def running(self):
+        return self._asst.running()
 
     def run_task(self, task):
 
@@ -137,66 +137,47 @@ class Dev:
 
 
 class TaskAndDeviceManager:
-    _devices: list[Dev] = []
+    _devices: list[Device] = []
     _tasks = {}
 
     def add_device(self, device):
         self._devices.append(device)
+        # TODO 注册
         pass
 
     def add_task(self, task):
-        server = [
-            maa_task
-            for maa_task in task["task"]
-            if maa_task["task_name"] == "StartUp"
-        ][0]["task_config"]["client_type"]
-        if server == "Bilibili":
-            server = "Official"
+        server = [maa_task for maa_task in task["task"] if maa_task["task_name"] == "StartUp"][0]["task_config"]["client_type"].replace("Bilibili", "Official")
 
-        server_tasks_ls = self._tasks.get(server)
-        if server_tasks_ls is None:
-            self._tasks[server] = [task]
-        else:
-            self._tasks[server].append(task)
+        self._tasks.setdefault(server, []).append(task)
 
-    def monitor(self):
-        while (True):
-            if len(self._tasks) != 0:
-                first_key = next(iter(self._tasks.keys()))
-                task_list = self._tasks[first_key]
-                idle_devs = [
-                    dev for dev in self._devices if not dev._asst.running()]
-                for dev in idle_devs:
-                    run_task = None
+    def start(self):
+        while len(self._tasks) != 0:
+            time.sleep(5)
 
-                    for_this_aval_tasks_matches_addr = [
-                        task for task in task_list if task.get('device') == dev.emulator_addr]
-                    if len(for_this_aval_tasks_matches_addr) == 0:
-                        for_this_aval_tasks = [
-                            task for task in task_list if task.get('device') == None]
-                        if len(for_this_aval_tasks) == 0:
-                            pass
-                        else:
-                            run_task = for_this_aval_tasks[0]
-                    else:
-                        run_task = for_this_aval_tasks_matches_addr[0]
-                        pass
+            idle_devices = [device for device in self._devices if not device.running()]
 
-                    if run_task is not None:
-                        dev.run_task(run_task)
-                        task_list.remove(run_task)
-                        pass
+            current_server, current_server_task_list = None, None
 
-                all_dev_is_idle = all(not device._asst.running()
-                                      for device in self._devices)
-                if all_dev_is_idle:
-                    self._tasks.pop(first_key)
-                    first_key = next(iter(self._tasks.keys()))
-                    load_res(first_key)
-                    pass
-            else:
-                break
+            def update_cur():
+                nonlocal current_server, current_server_task_list
+                current_server = next(iter(self._tasks.keys()))
+                current_server_task_list = self._tasks[current_server]
 
-            time.sleep(2)
-            pass
-    pass
+            update_cur()
+
+            for device in idle_devices:
+                distribute_task = (
+                    [task for task in current_server_task_list if task.get('device') == device.emulator_addr] or
+                    [task for task in current_server_task_list if task.get('device') is None] or
+                    [None]
+                )[0]
+
+                if distribute_task is not None:
+                    device.run_task(distribute_task)
+                    current_server_task_list.remove(distribute_task)
+
+            all_devices_idle_although_tasks_distributed: bool = all(not device.running() for device in self._devices)
+            if all_devices_idle_although_tasks_distributed:
+                self._tasks.pop(current_server)
+                update_cur()
+                load_res(current_server)
