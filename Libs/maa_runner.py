@@ -154,8 +154,6 @@ class TaskAndDeviceManager:
         while len(self._tasks) != 0:
             time.sleep(5)
 
-            idle_devices = [device for device in self._devices if not device.running()]
-
             current_server, current_server_task_list = None, None
 
             def update_cur():
@@ -165,19 +163,21 @@ class TaskAndDeviceManager:
 
             update_cur()
 
-            for device in idle_devices:
-                distribute_task = (
-                    [task for task in current_server_task_list if task.get('device') == device.emulator_addr] or
-                    [task for task in current_server_task_list if task.get('device') is None] or
-                    [None]
-                )[0]
+            if current_server_task_list:
+                idle_devices = [device for device in self._devices if not device.running()]
+                for device in idle_devices:
+                    distribute_task = (
+                        [task for task in current_server_task_list if task.get('device') == device.emulator_addr] or
+                        [task for task in current_server_task_list if task.get('device') is None] or
+                        [None]
+                    )[0]
 
-                if distribute_task is not None:
-                    device.run_task(distribute_task)
-                    current_server_task_list.remove(distribute_task)
+                    if distribute_task:
+                        device.run_task(distribute_task)
+                        current_server_task_list.remove(distribute_task)
 
-            all_devices_idle_although_tasks_distributed: bool = all(not device.running() for device in self._devices)
-            if all_devices_idle_although_tasks_distributed:
-                self._tasks.pop(current_server)
-                update_cur()
-                load_res(current_server)
+                all_devices_idle_although_tasks_distributed: bool = all(not device.running() for device in self._devices)
+                if all_devices_idle_although_tasks_distributed:
+                    self._tasks.pop(current_server)
+                    update_cur()
+                    load_res(current_server)
