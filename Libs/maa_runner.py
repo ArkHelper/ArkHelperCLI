@@ -212,9 +212,9 @@ class TaskAndDeviceManager:
                         device.run_task(distribute_task)
                         current_server_task_list.remove(distribute_task)
 
-                all_devices_idle_although_tasks_distributed: bool = all(not device.running() for device in self._devices)
-                if all_devices_idle_although_tasks_distributed:
-                    self._tasks.pop(current_server)
-                    update_cur()
-                    if current_server:
-                        load_res(current_server)
+            all_devices_idle: bool = all(not device.running() for device in self._devices)
+            if all_devices_idle:
+                self._tasks.pop(current_server)
+                update_cur()
+                if current_server:
+                    load_res(current_server)
