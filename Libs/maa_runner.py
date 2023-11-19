@@ -1,10 +1,6 @@
-from threading import local
-from typing import Any
-
-from networkx import antichains, node_link_data
 from Libs.MAA.asst.asst import Asst
 from Libs.maa_util import asst_callback, asst_tostr, load_res, update_nav
-from Libs.utils import kill_processes_by_name, read_config_and_validate, read_json
+from Libs.utils import kill_processes_by_name, random_choice_with_weights, read_config_and_validate, read_json, arknights_checkpoint_opening_time, get_server_time
 import var
 
 import logging
@@ -28,8 +24,8 @@ async def run_all_devs():
     load_res(None)
 
     for process in var.global_config['devices']:
-       for process_name in process['process_name']:
-           kill_processes_by_name(process_name)
+        for process_name in process['process_name']:
+            kill_processes_by_name(process_name)
 
     time.sleep(5)
 
@@ -44,35 +40,75 @@ async def run_all_devs():
 
 
 def extend_full_tasks(config, defaults):
-    return_ls: list = []
+    final_tasks: list = []
 
-    tasks = config["task"]
+    config_tasks = config["task"]
+    black_task_names = config.get("blacklist", [])
+    server = ""
     for default_task in defaults:
         default_task: dict
 
-        fin_task_config = copy.deepcopy(default_task["task_config"])
-        fin_task_name = copy.deepcopy(default_task["task_name"])
+        final_task_config = copy.deepcopy(default_task["task_config"])
+        final_task_name = copy.deepcopy(default_task["task_name"])
 
-        fin_task_config.update(tasks.get(fin_task_name, {}))
-        if fin_task_name not in config.get("blacklist", []):
-            return_ls.append({
-                "task_name": fin_task_name,
-                "task_config": fin_task_config
-            })
+        preference_task_config = config_tasks.get(final_task_name, {})
+
+        if final_task_name not in black_task_names:
+            def update():
+                final_task_config.update(preference_task_config)
+
+            def append():
+                final_tasks.append({
+                    "task_name": final_task_name,
+                    "task_config": final_task_config
+                })
 
             # MAA的一个bug，有概率切换账号后无法登录，所以再加个登录Task
-            if fin_task_name == "StartUp":
-                if fin_task_config.get("account_name", "") != "":
+            # FIXME:(好像修好了)
+            if final_task_name == "StartUp":
+                update()
+                append()
+
+                server = final_task_config.get("client_type", "Official")
+
+                if final_task_config.get("account_name", "") != "" and False:
                     another_startup_task_config = copy.deepcopy(
-                        fin_task_config)
+                        final_task_config)
                     another_startup_task_config["account_name"] = ""
-                    return_ls.append({
-                        "task_name": fin_task_name,
+                    final_tasks.append({
+                        "task_name": final_task_name,
                         "task_config": another_startup_task_config
                     })
+            elif final_task_name == "Fight":
+                preference_checkpoint = preference_task_config.get("stage")
+
+                if preference_checkpoint and type(preference_checkpoint) is dict:
+                    checkpoints_in_limit_list = [cp for cp in preference_checkpoint if cp.rsplit("-", 1)[0] in arknights_checkpoint_opening_time]
+                    checkpoints_outof_limit_list = [cp for cp in preference_checkpoint if not cp.rsplit("-", 1)[0] in arknights_checkpoint_opening_time]
+
+                    for checkpoint in checkpoints_in_limit_list:
+                        opening_time = arknights_checkpoint_opening_time[checkpoint.rsplit("-", 1)[0]]
+
+                        if get_server_time(server).weekday()+1 not in opening_time:
+                            preference_checkpoint.pop(checkpoint)
+                            continue
+
+                        rate_standard_coefficient = len(opening_time)
+                        preference_checkpoint[checkpoint] /= rate_standard_coefficient  # 平衡概率
+
+                    for checkpoint in checkpoints_outof_limit_list:
+                        preference_checkpoint[checkpoint] /= 7  # 平衡概率
+
+                    preference_task_config["stage"] = random_choice_with_weights(preference_checkpoint)
+
+                update()
+                append()
+            else:
+                update()
+                append()
 
     return {
-        "task": return_ls,
+        "task": final_tasks,
         "device": config.get("device", None)
     }
 
@@ -157,10 +193,10 @@ class TaskAndDeviceManager:
 
             def update_cur():
                 nonlocal current_server, current_server_task_list
-                current_server = next(iter(self._tasks.keys()),None)
-                current_server_task_list = self._tasks.get(current_server,None)
+                current_server = next(iter(self._tasks.keys()), None)
+                current_server_task_list = self._tasks.get(current_server, None)
 
-            #TODO:逻辑还需要优化，比如第一列如果不是国服呢？
+            # TODO:逻辑还需要优化，比如第一列如果不是国服呢？
             update_cur()
 
             if current_server_task_list:

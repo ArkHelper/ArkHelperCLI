@@ -1,10 +1,13 @@
 import json
 import pathlib
 import logging
+import random
 import psutil
 import threading
 import subprocess
 import os
+
+import pytz
 
 import var
 from jsonschema import validate
@@ -57,3 +60,41 @@ def kill_processes_by_name(process_name) -> bool:
     except subprocess.CalledProcessError as e:
         logging.debug(f"killing result:{e.stderr}")
         return False
+
+def get_server_time(server):
+    zone = pytz.timezone('GMT')
+    if server in ('Official','Bilibili','txwy'):
+        zone = pytz.timezone('Asia/Shanghai')
+        #zone = pytz.timezone('Asia/Taipei')
+    elif server in ('YoStarJP','YoStarKR'):
+        zone = pytz.timezone('Asia/Tokyo')
+        #zone = pytz.timezone('Asia/Seoul')
+    
+
+    return datetime.utcnow().replace(tzinfo=pytz.utc).astimezone(zone)
+    pass
+
+arknights_checkpoint_opening_time = {
+    "SK": [1,3,5,6],
+    "AP": [1,4,6,7],
+    "CA": [2,3,5,7],
+    "CE": [2,4,6,7],
+    "LS": [1,2,3,4,5,6,7],
+    "PR-A": [1,4,5,7],
+    "PR-B": [1,2,5,6],
+    "PR-C": [3,4,6,7],
+    "PR-D": [2,3,6,7]
+}
+
+def random_choice_with_weights(dict):
+    # 样本数据
+    items = []
+
+    # 对应的权重
+    weights = []
+
+    for i in dict :
+        items.append(i)
+        weights.append(dict[i])
+
+    return random.choices(items, weights)[0]
