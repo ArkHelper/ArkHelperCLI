@@ -21,6 +21,9 @@ var.personal_configs = read_config_and_validate("personal")
 var.verbose = "-v" in sys.argv or "--verbose" in sys.argv
 var.task_and_device_manager = TaskAndDeviceManager()
 
+os.remove(str(var.cli_env / "Log" / "log.log"))
+os.remove(str(var.asst_res_lib_env / "debug" / "asst.log"))
+
 logging.basicConfig(level=logging.DEBUG,
                     handlers=get_logging_handlers(
                         logging.DEBUG, logging.DEBUG if var.verbose else logging.INFO),
@@ -29,10 +32,6 @@ logging.basicConfig(level=logging.DEBUG,
 logging.info(f"started up at {var.cli_env}")
 logging.info(f"with global config {var.global_config}")
 logging.info(f"with personal config {var.personal_configs}")
-
-
-os.remove(str(var.cli_env / "Log" / "log.log"))
-os.remove(str(var.asst_res_lib_env / "debug" / "asst.log"))
 
 
 async def main():
