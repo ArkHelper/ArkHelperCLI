@@ -142,7 +142,6 @@ class TaskAndDeviceManager:
 
     def add_device(self, device):
         self._devices.append(device)
-        # TODO 注册
         pass
 
     def add_task(self, task):
@@ -158,9 +157,10 @@ class TaskAndDeviceManager:
 
             def update_cur():
                 nonlocal current_server, current_server_task_list
-                current_server = next(iter(self._tasks.keys()))
-                current_server_task_list = self._tasks[current_server]
+                current_server = next(iter(self._tasks.keys()),None)
+                current_server_task_list = self._tasks.get(current_server,None)
 
+            #TODO:逻辑还需要优化，比如第一列如果不是国服呢？
             update_cur()
 
             if current_server_task_list:
@@ -180,4 +180,5 @@ class TaskAndDeviceManager:
                 if all_devices_idle_although_tasks_distributed:
                     self._tasks.pop(current_server)
                     update_cur()
-                    load_res(current_server)
+                    if current_server:
+                        load_res(current_server)
