@@ -21,8 +21,11 @@ var.personal_configs = read_config_and_validate("personal")
 var.verbose = "-v" in sys.argv or "--verbose" in sys.argv
 var.task_and_device_manager = TaskAndDeviceManager()
 
-os.remove(str(var.cli_env / "Log" / "log.log"))
-os.remove(str(var.asst_res_lib_env / "debug" / "asst.log"))
+try:
+    os.remove(str(var.cli_env / "Log" / "log.log"))
+    os.remove(str(var.asst_res_lib_env / "debug" / "asst.log"))
+except:
+    pass
 
 logging.basicConfig(level=logging.DEBUG,
                     handlers=get_logging_handlers(
