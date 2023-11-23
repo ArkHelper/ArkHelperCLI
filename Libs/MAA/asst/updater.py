@@ -32,7 +32,7 @@ class Updater:
         从MaaCore.dll获取当前版本号
         这里是复用原来的方法
         """
-        Asst.load(path=path)
+        Asst.load_res(path=path)
         q.put(Asst().get_version())
 
     def __init__(self, path, version):

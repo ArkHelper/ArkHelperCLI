@@ -40,7 +40,7 @@ if __name__ == "__main__":
     #             f.write(u.read().decode('utf-8'))
     #     # 加载
     #     Asst.load(path=path, incremental_path=path / 'cache')
-    Asst.load(path=path)
+    Asst.load_res(path=path)
 
     # 若需要获取详细执行信息，请传入 callback 参数
     # 例如 asst = Asst(callback=my_callback)

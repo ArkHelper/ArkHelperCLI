@@ -9,6 +9,7 @@ from Libs.MAA.asst.utils import Message, Version, InstanceOptionType
 import var
 
 import pathlib
+import os
 import logging
 import json
 import logging
@@ -32,15 +33,15 @@ def asst_tostr(emulator_address):
     return f"asst instance({emulator_address})"
 
 
-def load_res(client_type: Optional[Union[str, None]] = None):
+def load_res(asst:Asst, client_type: Optional[Union[str, None]] = None):
     incr:pathlib.Path
     if client_type in ["Official", "Bilibili", None]:
         incr = var.asst_res_lib_env / 'cache'
     else:
         incr = var.asst_res_lib_env / 'resource' / 'global' / str(client_type)
         
-    logging.debug(f"asst resource and lib loaded from main path {var.asst_res_lib_env} and incremental path {incr}")
-    Asst.load(var.asst_res_lib_env, incr)
+    logging.debug(f"asst resource and lib loaded from incremental path {incr}")
+    asst.load_res(incr)
 
 
 
@@ -56,6 +57,9 @@ def update_nav():
     last_upd_time_url = "https://ota.maa.plus/MaaAssistantArknights/api/lastUpdateTime.json"
     last_upd_time_path = path / 'cache' / 'resource' / 'lastUpdateTime.json'
     last_upd_time_path.parent.mkdir(parents=True, exist_ok=True)
+    if not os.path.exists(str(last_upd_time_path)):
+        with open(str(last_upd_time_path),'w'):
+            pass
     with open(last_upd_time_path, 'r+', encoding='utf-8') as f:
         with urllib.request.urlopen(last_upd_time_url) as u:
             server_json = json.loads(u.read().decode('utf-8'))

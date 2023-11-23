@@ -10,7 +10,7 @@ import var
 interval = 55
 
 
-async def start_scheduler():
+def start_scheduler():
     var.global_config["plan"] = sorted(
         var.global_config["plan"], key=lambda x: x["time"])
 
@@ -42,7 +42,7 @@ async def start_scheduler():
             if "skland" in _task:
                 run_auto_sign()
             if "maa" in _task:
-                await run_all_devs()
+                run_all_devs()
 
             get_next()
         else:
