@@ -42,7 +42,7 @@ def run_all_devs():
         processes.append(proc)
 
     while True:
-        if not any([p.is_alive for p in processes]):
+        if not any([p.is_alive() for p in processes]):
             break
         time.sleep(5)
 
