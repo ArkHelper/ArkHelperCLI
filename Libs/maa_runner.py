@@ -1,5 +1,6 @@
 from multiprocessing import Process
 import random
+import subprocess
 from Libs.MAA.asst.asst import Asst
 from Libs.maa_util import asst_callback, asst_tostr, load_res, update_nav
 from Libs.utils import kill_processes_by_name, random_choice_with_weights, read_config_and_validate, read_json, arknights_checkpoint_opening_time, get_server_time
@@ -161,8 +162,8 @@ class Device:
 
             # 启动模拟器
             if not _execedStart and self._start_path is not None:
-                os.startfile(os.path.abspath(
-                    self._start_path))  # 程序结束后会自动关闭？！
+                os.startfile(os.path.abspath(self._start_path))  # 程序结束后会自动关闭？！
+
                 _execedStart = True
 
                 logging.info(f"started emulator at {self._start_path}")
