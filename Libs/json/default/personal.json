@@ -66,7 +66,7 @@
             "set_time": true,
             "expedite": false,
             "expedite_times": 3,
-            "skip_robot": true,
+            "skip_robot": false,
             "recruitment_time": {
                 "3": 460
             },

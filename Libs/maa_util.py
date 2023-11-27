@@ -24,7 +24,7 @@ def asst_callback(msg, details, arg):
         m = Message(msg)
         #d = json.loads(details.decode('utf-8'))
         d = details.decode('utf-8')
-        #logging.debug(f'got callback from asst inst: {m},{arg},{d}')
+        logging.debug(f'got callback from asst inst: {m},{arg},{d}')
     except:
         pass
 
