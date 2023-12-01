@@ -58,11 +58,10 @@
                 5
             ],
             "confirm": [
-                3,
                 4,
                 5
             ],
-            "times": 3,
+            "times": 4,
             "set_time": true,
             "expedite": false,
             "expedite_times": 3,
@@ -70,8 +69,8 @@
             "recruitment_time": {
                 "3": 460
             },
-            "report_to_penguin": true,
-            "report_to_yituliu": true,
+            "report_to_penguin": false,
+            "report_to_yituliu": false,
             "penguin_id": "",
             "server": "CN"
         }
