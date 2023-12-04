@@ -28,15 +28,16 @@ logging.basicConfig(level=logging.DEBUG,
                     handlers=get_logging_handlers(
                         logging.DEBUG, logging.DEBUG if var.verbose else logging.INFO),
                     format="%(asctime)s[%(levelname)s] %(message)s")
-logging.info(f"started up at {var.cli_env}")
-logging.info(f"with global config {var.global_config}")
-logging.info(f"with personal config {var.personal_configs}")
 
 def main():
     start_scheduler()
     logging.info(f"everything completed. exit")
 
 if __name__ == "__main__":
+    logging.info(f"started up at {var.cli_env}")
+    logging.info(f"with global config {var.global_config}")
+    logging.info(f"with personal config {var.personal_configs}")
+    
     if "-t" in sys.argv:
         test()
     elif "scht" in sys.argv:

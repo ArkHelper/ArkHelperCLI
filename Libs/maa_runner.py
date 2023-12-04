@@ -12,15 +12,18 @@ import time
 import copy
 import multiprocessing
 
-def run_dev(dev,tasks,info):
-    dev = Device(dev,tasks,info)
-    dev.start_run()
+
+def run_dev(dev, tasks, info):
+    dev = Device(dev, tasks, info)
+    dev.run()
 
 
 def kill_all_emulators():
     for process in var.global_config['devices']:
+        logging.info(f"trying to kill {process}")
         for process_name in process['process_name']:
             kill_processes_by_name(process_name)
+
 
 def run_all_devs():
     update_nav()
@@ -34,11 +37,11 @@ def run_all_devs():
 
     kill_all_emulators()
 
-    processes:list[Process] = []
+    processes: list[Process] = []
     task_arr = multiprocessing.Manager().list()
     task_arr.extend(var.tasks)
-    for index,dev in enumerate(var.global_config["devices"]):
-        proc = multiprocessing.Process(target=run_dev,args=(dev,task_arr,{"index":index}))
+    for index, dev in enumerate(var.global_config["devices"]):
+        proc = multiprocessing.Process(target=run_dev, args=(dev, task_arr, {"index": index}))
         proc.start()
         processes.append(proc)
 
@@ -132,7 +135,7 @@ def add_personal_tasks(asst: Asst, config):
 
 
 class Device:
-    def __init__(self, dev_config,tasks,info) -> None:
+    def __init__(self, dev_config, tasks, info) -> None:
         self._adb_path = os.path.abspath(dev_config["adb_path"])
         self._start_path = dev_config["start_path"]
 
@@ -143,12 +146,24 @@ class Device:
         self._connected = False
 
         self._current_server = ""
-        self._asst = Asst(var.asst_res_lib_env ,var.asst_res_lib_env/ f"userDir{self.info['index']}",asst_callback)
-        self._asst_str = f"asst instance{self.info['index']}({self.emulator_addr})"
+        self._asst = Asst(var.asst_res_lib_env, var.asst_res_lib_env / f"userDir{self.info['index']}", asst_callback)
+        self._asst_str = f"device & asst instance {self.info['index']}({self.emulator_addr})"
 
         self._shared_tasks = tasks
 
         self._connect()
+
+    def exec_adb(self, cmd: str):
+        try:
+            cmd_ls = cmd.split(' ')
+            adb_command = [self._adb_path, '-s', self.emulator_addr]
+            adb_command.extend(cmd_ls)
+
+            result = subprocess.run(adb_command, capture_output=True, text=True, check=True)
+            logging.debug("adb output:", result.stdout)
+        except subprocess.CalledProcessError as e:
+            logging.debug("adb exec error:", e.stderr)
+        pass
 
     def _connect(self):
         _execedStart = False
@@ -173,8 +188,8 @@ class Device:
 
     def running(self):
         return self._asst.running()
-    
-    def start_run(self):
+
+    def run(self):
         while True:
             if not self.running():
                 distribute_task = (
@@ -187,16 +202,17 @@ class Device:
                     self.run_task(distribute_task)
                     self._shared_tasks.remove(distribute_task)
                 else:
+                    logging.info(f"{self._asst_str} finished all tasks and self.run() exited.")
                     break
             time.sleep(5)
 
     def run_task(self, task):
         server = [maa_task for maa_task in task["task"] if maa_task["task_name"] == "StartUp"][0]["task_config"]["client_type"].replace("Bilibili", "Official")
         if self._current_server != server:
-            load_res(self._asst,server)
+            load_res(self._asst, server)
 
         add_personal_tasks(self._asst, task)
 
-        #max_wait_time = 50*60
+        # max_wait_time = 50*60
         self._asst.start()
         logging.info(f"{self._asst_str} start run task {task}")

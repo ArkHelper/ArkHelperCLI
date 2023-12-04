@@ -78,7 +78,7 @@ def update_nav():
                 f.seek(0)
                 f.write(json.dumps(server_json))
                 f.truncate()
-                logging.debug(f"last update time updated")
+                logging.info(f"last update time updated")
 
 
     if need_update:
