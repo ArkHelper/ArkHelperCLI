@@ -209,6 +209,8 @@ class Device:
             time.sleep(5)
 
     def run_task(self, task):
+        logging.info(f"{self._asst_str} start run task {task}")
+        
         server = [maa_task for maa_task in task["task"] if maa_task["task_name"] == "StartUp"][0]["task_config"]["client_type"]
 
         self.exec_adb(f'shell am start -n {arknights_pack_name[server]}/com.u8.sdk.U8UnityContext')
@@ -221,4 +223,3 @@ class Device:
 
         # max_wait_time = 50*60
         self._asst.start()
-        logging.info(f"{self._asst_str} start run task {task}")
