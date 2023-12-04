@@ -128,7 +128,7 @@ def extend_full_tasks(config, defaults):
 
 
 def add_personal_tasks(asst: Asst, config):
-    logging.info(
+    logging.debug(
         f'append task with config {config}')
     for maa_task in config["task"]:
         asst.append_task(maa_task["task_name"], maa_task["task_config"])
@@ -192,6 +192,8 @@ class Device:
     def run(self):
         while True:
             if not self.running():
+                logging.info(f"{self._asst_str} is not running (might finished a task). Device task manager start to distribute task.")
+
                 distribute_task = (
                     [task for task in self._shared_tasks if task.get('device') == self.emulator_addr] or
                     [task for task in self._shared_tasks if task.get('device') is None] or
