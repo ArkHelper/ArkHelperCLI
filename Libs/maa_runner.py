@@ -3,7 +3,7 @@ import random
 import subprocess
 from Libs.MAA.asst.asst import Asst
 from Libs.maa_util import asst_callback, asst_tostr, load_res, update_nav
-from Libs.utils import kill_processes_by_name, random_choice_with_weights, read_config_and_validate, read_json, arknights_checkpoint_opening_time, get_server_time
+from Libs.utils import kill_processes_by_name, random_choice_with_weights, read_config_and_validate, read_json, arknights_checkpoint_opening_time, get_server_time,arknights_pack_name
 import var
 
 import logging
@@ -160,9 +160,9 @@ class Device:
             adb_command.extend(cmd_ls)
 
             result = subprocess.run(adb_command, capture_output=True, text=True, check=True)
-            logging.debug("adb output:", result.stdout)
+            logging.debug(f"adb output: {result.stdout}")
         except subprocess.CalledProcessError as e:
-            logging.debug("adb exec error:", e.stderr)
+            logging.debug(f"adb exec error: {e.stderr}")
         pass
 
     def _connect(self):
@@ -172,7 +172,7 @@ class Device:
             logging.debug(f"{self._asst_str} try to connect {self.emulator_addr}")
 
             if self._asst.connect(self._adb_path, self.emulator_addr):
-                logging.debug(f"{self._asst_str} connected {self.emulator_addr}")
+                logging.info(f"{self._asst_str} connected {self.emulator_addr}")
                 break
 
             # 启动模拟器
@@ -207,9 +207,13 @@ class Device:
             time.sleep(5)
 
     def run_task(self, task):
-        server = [maa_task for maa_task in task["task"] if maa_task["task_name"] == "StartUp"][0]["task_config"]["client_type"].replace("Bilibili", "Official")
-        if self._current_server != server:
-            load_res(self._asst, server)
+        server = [maa_task for maa_task in task["task"] if maa_task["task_name"] == "StartUp"][0]["task_config"]["client_type"]
+
+        self.exec_adb(f'shell am start -n {arknights_pack_name[server]}/com.u8.sdk.U8UnityContext')
+        time.sleep(10)
+
+        if self._current_server != server.replace("Bilibili", "Official"):
+            load_res(self._asst, server.replace("Bilibili", "Official"))
 
         add_personal_tasks(self._asst, task)
 
