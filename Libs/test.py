@@ -17,8 +17,8 @@ def test():
         'index': 1
     })
     load_res(dev._asst)
-    load_res(dev._asst, 'YoStarEN')
     load_res(dev._asst, 'YoStarJP')
+    load_res(dev._asst, 'YoStarEN')
     dev._connect()
 
     dev._asst.append_task('Recruit',{

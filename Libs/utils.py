@@ -89,10 +89,10 @@ arknights_checkpoint_opening_time = {
 arknights_pack_name = {
     'Official':'com.hypergryph.arknights',
     'Bilibili':'com.hypergryph.arknights.bilibili',
-    'txwy':'com.YoStarJP.Arknights',
+    'YoStarJP':'com.YoStarJP.Arknights',
     'YoStarEN':'com.YoStarEN.Arknights',
-    'YoStarJP':'com.YoStarKR.Arknights',
-    'YoStarKR':'tw.txwy.and.arknights'
+    'YoStarKR':'com.YoStarKR.Arknights',
+    'txwy':'tw.txwy.and.arknights'
 }
 
 def random_choice_with_weights(dict):
