@@ -214,7 +214,7 @@ class Device:
         server = [maa_task for maa_task in task["task"] if maa_task["task_name"] == "StartUp"][0]["task_config"]["client_type"]
 
         self.exec_adb(f'shell am start -n {arknights_pack_name[server]}/com.u8.sdk.U8UnityContext')
-        time.sleep(10)
+        time.sleep(15)
 
         if self._current_server != server.replace("Bilibili", "Official"):
             load_res(self._asst, server.replace("Bilibili", "Official"))
