@@ -8,6 +8,7 @@ import argparse
 import threading
 import subprocess
 import os
+import yaml
 
 import pytz
 
@@ -56,8 +57,11 @@ def read_file(path):
         return file.read()
 
 
-def read_json(path):
+def read_yaml(path):
     return json.loads(read_file(path))
+
+def read_yaml(path):
+    return yaml.safe_load(read_file(path))
 
 
 def write_file(path, content):
@@ -68,10 +72,13 @@ def write_file(path, content):
 def write_json(path, content):
     write_file(path, json.dumps(content))
 
+def write_yaml(path, content):
+    write_file(path, yaml.safe_dump(content)) 
+
 
 def read_config(config_name):
-    json_data = read_json(var.cli_env / 'Config' / f'{config_name}.json')
-    return json_data
+    data = read_yaml(var.cli_env / 'Config' / f'{config_name}.yaml')
+    return data
 
 
 def get_logging_handlers(file_level, console_level):

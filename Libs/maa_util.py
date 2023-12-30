@@ -3,7 +3,7 @@ from Libs.MAA.asst.asst import Asst
 from Libs.MAA.asst.utils import Message
 from Libs.MAA.asst.asst import Asst
 from Libs.MAA.asst.utils import Message, Version, InstanceOptionType
-from Libs.utils import read_json, write_json, read_file, write_file
+from Libs.utils import read_yaml, write_json, read_file, write_file
 import var
 
 import pathlib
@@ -50,7 +50,7 @@ def update_nav():
     last_update_time_file_server = 'https://ota.maa.plus/MaaAssistantArknights/api/lastUpdateTime.json'
     last_update_time_file_local = path / 'cache' / 'resource' / 'lastUpdateTime.json'
     try:
-        last_update_time_local = read_json(last_update_time_file_local)['timestamp']
+        last_update_time_local = read_yaml(last_update_time_file_local)['timestamp']
     except:
         last_update_time_file_local.parent.mkdir(parents=True, exist_ok=True)
         write_file(last_update_time_file_local, '')

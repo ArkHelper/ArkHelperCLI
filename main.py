@@ -16,19 +16,19 @@ var.default_personal_config = read_config('default_personal')
 var.tasks = []
 var.verbose = verbose
 
-try:
-    logging.basicConfig(level=logging.DEBUG,
-                        handlers=get_logging_handlers(logging.DEBUG, logging.DEBUG if var.verbose else logging.INFO),
-                        format='%(asctime)s[%(levelname)s] %(message)s')
-    logging.debug(f'started up at {var.cli_env}')
-    logging.debug(f'with global config {var.global_config}')
-    logging.debug(f'with personal config {var.personal_configs}')
+logging.basicConfig(level=logging.DEBUG,
+                    handlers=get_logging_handlers(logging.DEBUG, logging.DEBUG if var.verbose else logging.INFO),
+                    format='%(asctime)s[%(levelname)s] %(message)s')
+logging.debug(f'started up at {var.cli_env}')
+logging.debug(f'with global config {var.global_config}')
+logging.debug(f'with personal config {var.personal_configs}')
 
-    if __name__ == '__main__':
+if __name__ == '__main__':
+    try:
         if mode == 'test':
             test()
         elif mode == 'run':
             run_all_devs()
 
-except Exception as e:
+    except Exception as e:
         logging.error(f"An expected error was occured when running:", exc_info=True)

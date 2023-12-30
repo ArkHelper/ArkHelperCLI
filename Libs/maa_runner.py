@@ -3,7 +3,7 @@ import random
 import subprocess
 from Libs.MAA.asst.asst import Asst
 from Libs.maa_util import asst_callback, asst_tostr, load_res, update_nav
-from Libs.utils import kill_processes_by_name, random_choice_with_weights, read_config, read_json, arknights_checkpoint_opening_time, get_server_time, arknights_pack_name
+from Libs.utils import kill_processes_by_name, random_choice_with_weights, read_config, read_yaml, arknights_checkpoint_opening_time, get_server_time, arknights_pack_name
 import var
 
 import logging
