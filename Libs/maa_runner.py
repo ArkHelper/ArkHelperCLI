@@ -3,7 +3,7 @@ import random
 import subprocess
 from Libs.MAA.asst.asst import Asst
 from Libs.maa_util import asst_callback, asst_tostr, load_res, update_nav
-from Libs.utils import kill_processes_by_name, random_choice_with_weights, read_config_and_validate, read_json, arknights_checkpoint_opening_time, get_server_time, arknights_pack_name
+from Libs.utils import kill_processes_by_name, random_choice_with_weights, read_config, read_json, arknights_checkpoint_opening_time, get_server_time, arknights_pack_name
 import var
 
 import logging
@@ -32,9 +32,8 @@ def run_all_devs():
     update_nav()
 
     var.tasks = []
-    personal_default = read_json(var.cli_env / 'Libs' / 'json' / 'default' / 'personal.json')
     for personal_config in var.personal_configs:
-        var.tasks.append(extend_full_tasks(personal_config, personal_default))
+        var.tasks.append(extend_full_tasks(personal_config))
 
     kill_all_emulators()
 
@@ -54,19 +53,23 @@ def run_all_devs():
     kill_all_emulators()
 
 
-def extend_full_tasks(config, defaults):
+def extend_full_tasks(config):
     final_tasks: list = []
 
-    config_tasks = config['task']
+    overrides = config['override']
     black_task_names = config.get('blacklist', [])
     server = ''
-    for default_task in defaults:
+    for default_task in var.default_personal_config:
         default_task: dict
 
         final_task_config = copy.deepcopy(default_task['task_config'])
         final_task_name = copy.deepcopy(default_task['task_name'])
 
-        preference_task_config = config_tasks.get(final_task_name, {})
+        preference_task_config = \
+            (
+                [override['task_config'] for override in overrides if override['task_name'] == final_task_name] or
+                [{}]
+            )[0]
 
         if final_task_name not in black_task_names:
             def update():

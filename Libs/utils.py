@@ -69,11 +69,8 @@ def write_json(path, content):
     write_file(path, json.dumps(content))
 
 
-def read_config_and_validate(config_name):
+def read_config(config_name):
     json_data = read_json(var.cli_env / 'Config' / f'{config_name}.json')
-    json_schema = read_json(var.cli_env / 'Libs' /
-                            'json' / 'config_schema' / f'{config_name}.json')
-    validate(instance=json_data, schema=json_schema)
     return json_data
 
 
