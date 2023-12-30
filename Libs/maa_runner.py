@@ -15,6 +15,9 @@ import multiprocessing
 
 def run_dev(dev, tasks, info):
     dev = Device(dev, tasks, info)
+    #dev.exec_adb('kill-server')
+    #dev.exec_adb('start-server')
+    dev.connect()
     dev.run()
 
 
@@ -151,21 +154,19 @@ class Device:
 
         self._shared_tasks = tasks
 
-        self._connect()
-
     def exec_adb(self, cmd: str):
         try:
             cmd_ls = cmd.split(' ')
             adb_command = [self._adb_path, '-s', self.emulator_addr]
             adb_command.extend(cmd_ls)
 
-            result = subprocess.run(adb_command, capture_output=True, text=True, check=True)
+            result = subprocess.run(adb_command, capture_output=True, text=True, check=True,encoding='utf-8')
             logging.debug(f"adb output: {result.stdout}")
         except subprocess.CalledProcessError as e:
             logging.debug(f"adb exec error: {e.stderr}")
         pass
 
-    def _connect(self):
+    def connect(self):
         _execedStart = False
         while True:
 

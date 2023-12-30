@@ -88,7 +88,10 @@
                 "装置"
             ],
             "blacklist": [
-                "加急许可"
+                "加急许可",
+                "讯使",
+                "嘉维尔",
+                "坚雷"
             ],
             "force_shopping_if_credit_full": true
         }
