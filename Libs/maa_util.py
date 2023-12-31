@@ -45,7 +45,7 @@ def load_res(asst: Asst, client_type: Optional[Union[str, None]] = None):
 def update_nav():
     path = var.asst_res_lib_env
 
-    need_update = True
+    need_update = False
 
     last_update_time_file_server = 'https://ota.maa.plus/MaaAssistantArknights/api/lastUpdateTime.json'
     last_update_time_file_local = path / 'cache' / 'resource' / 'lastUpdateTime.json'
