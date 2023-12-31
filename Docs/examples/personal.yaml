@@ -1,0 +1,37 @@
+- override: # Override fields in common task configuration templates
+    - task_name: StartUp
+      task_config:
+        client_type: Official
+        account_name: 123****4567
+    - task_name: Fight
+      task_config:
+        stage: "" # The stage field accepts a string or a list. String used to specify the level
+    - task_name: Infrast
+      task_config:
+        drones: PureGold
+  blacklist: # Add the task specified by the template to the blacklist and will not run it
+    - Recruit
+- device: mumu1 # A device specified in the global config can be specified to run
+  override:
+    - task_name: StartUp
+      task_config:
+        client_type: YoStarEN
+    - task_name: Fight
+      task_config:
+        stage: # The stage field accepts a string or a list. The list assigns weights to the specified levels, and the CLI will automatically parse and randomly assign the levels according to the weights. The weight is a real number(R).
+          LS-6: 5
+          CE-6: 5
+          PR-A-1: 1
+          PR-B-1: 1
+          PR-C-1: 1
+          PR-D-1: 1
+          2-9: 5
+          3-2: 5
+          3-3: 5
+          2-10: 5
+          S2-12: 5
+          S3-4: 5
+          S3-2: 5
+          S3-1: 5
+          S3-3: 5
+          3-7: 5

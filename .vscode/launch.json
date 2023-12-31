@@ -5,18 +5,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "以定时器模式启动",
-            "type": "python",
-            "request": "launch",
-            "program": "${workspaceFolder}/main.py",
-            "console": "integratedTerminal",
-            "args": [
-                "-v",
-                "scht"
-            ],
-            "justMyCode": true
-        },
-        {
             "name": "执行一轮maa任务并关闭",
             "type": "python",
             "request": "launch",
@@ -36,7 +24,7 @@
             "console": "integratedTerminal",
             "args": [
                 "-v",
-                "-t"
+                "test"
             ],
             "justMyCode": true
         }
