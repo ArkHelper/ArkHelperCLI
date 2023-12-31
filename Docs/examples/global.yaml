@@ -1,0 +1,15 @@
+devices:
+  - id: mumu
+    emulator_address: 127.0.0.1:16384
+    adb_path: D:\develop\platform-tools\adb.exe
+    start_path: ./RuntimeComponents/mumu.lnk
+    process_name:
+      - MuMuVMMHeadless
+      - MuMuPlayer
+  - id: mumu1
+    emulator_address: 127.0.0.1:16416
+    adb_path: D:\develop\platform-tools\adb.exe
+    start_path: ./RuntimeComponents/mumu1.lnk
+    process_name:
+      - MuMuVMMHeadless
+      - MuMuPlayer
