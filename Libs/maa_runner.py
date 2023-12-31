@@ -41,7 +41,7 @@ def run_all_devs():
     task_arr = multiprocessing.Manager().list()
     task_arr.extend(var.tasks)
     for index, dev in enumerate(var.global_config['devices']):
-        proc = multiprocessing.Process(target=run_dev, args=(dev, task_arr, {'index': index}))
+        proc = multiprocessing.Process(target=run_dev, args=(dev, task_arr, {}))
         proc.start()
         processes.append(proc)
 
@@ -146,13 +146,13 @@ class Device:
         self.emulator_addr = dev_config['emulator_address']
         self.running_task = None
         self.info = info
-        self.id = dev_config['id']
+        self.alias = dev_config['alias']
 
         self._connected = False
 
         self._current_server = ''
-        self._asst = Asst(var.asst_res_lib_env, var.asst_res_lib_env / f'userDir{self.info["index"]}', asst_callback)
-        self._asst_str = f'device & asst instance {self.id}({self.info["index"]}, {self.emulator_addr})'
+        self._asst = Asst(var.asst_res_lib_env, var.asst_res_lib_env / f'userDir_{self.alias}', asst_callback)
+        self._asst_str = f'device & asst instance {self.alias}({self.emulator_addr})'
 
         self._shared_tasks = tasks
 
@@ -198,7 +198,7 @@ class Device:
                 logging.info(f'{self._asst_str} is not running (might finished a task). Device task manager start to distribute task.')
 
                 distribute_task = (
-                    [task for task in self._shared_tasks if task.get('device') == self.id] or
+                    [task for task in self._shared_tasks if task.get('device') == self.alias] or
                     [task for task in self._shared_tasks if task.get('device') is None] or
                     [None]
                 )[0]
