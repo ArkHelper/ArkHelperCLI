@@ -19,11 +19,12 @@ var.verbose = verbose
 logging.basicConfig(level=logging.DEBUG,
                     handlers=get_logging_handlers(logging.DEBUG, logging.DEBUG if var.verbose else logging.INFO),
                     format='%(asctime)s[%(levelname)s] %(message)s')
-logging.debug(f'started up at {var.cli_env}')
-logging.debug(f'with global config {var.global_config}')
-logging.debug(f'with personal config {var.personal_configs}')
 
 if __name__ == '__main__':
+    logging.debug(f'started up at {var.cli_env}')
+    logging.debug(f'with global config {var.global_config}')
+    logging.debug(f'with personal config {var.personal_configs}')
+    
     try:
         if mode == 'test':
             test()
