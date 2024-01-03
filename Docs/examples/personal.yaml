@@ -5,7 +5,7 @@
         account_name: 123****4567
     - task_name: Fight
       task_config:
-        stage: "" # The stage field accepts a string or a list. String used to specify the level
+        stage: "" # The stage field accepts a string or a list. If it is a string, the specified content will be passed directly into MAA.
     - task_name: Infrast
       task_config:
         drones: PureGold
@@ -18,7 +18,10 @@
         client_type: YoStarEN
     - task_name: Fight
       task_config:
-        stage: # The stage field accepts a string or a list. The list assigns weights to the specified levels, and the CLI will automatically parse and randomly assign the levels according to the weights. The weight is a real number(R).
+        stage: 
+          # If it is a list that assigns weights to specified levels, the CLI will automatically parse the weights and randomly assign levels according to them. The weights are real numbers (R).
+          # Weight automatic balancing rules: 
+          #   1. (corresponding level weight)/(corresponding level open days per week) = (actual weight).
           LS-6: 5
           CE-6: 5
           PR-A-1: 1
