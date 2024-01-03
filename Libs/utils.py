@@ -15,6 +15,7 @@ import pytz
 import var
 from jsonschema import validate
 from datetime import datetime
+from datetime import timedelta
 
 
 def parse_arg():
@@ -103,7 +104,7 @@ def kill_processes_by_name(process_name) -> bool:
         return False
 
 
-def get_server_time(server):
+def get_game_time(server=''):
     zone = pytz.timezone('GMT')
     if server in ('Official', 'Bilibili', 'txwy'):
         zone = pytz.timezone('Asia/Shanghai')
@@ -111,11 +112,18 @@ def get_server_time(server):
     elif server in ('YoStarJP', 'YoStarKR'):
         zone = pytz.timezone('Asia/Tokyo')
         # zone = pytz.timezone('Asia/Seoul')
-
-    return datetime.utcnow().replace(tzinfo=pytz.utc).astimezone(zone)
-    pass
+    return (datetime.utcnow()-timedelta(hours=4)).replace(tzinfo=pytz.utc).astimezone(zone)
 
 
+def get_game_week(server):
+    '''
+    Get weekday in the game.
+    Returns an Int in 1~7, which means 周一二三四五六日 in Chinese.
+    '''
+    return get_game_time(server).weekday() + 1
+
+
+# checkpoint_opening_time, 1~7 means 周一二三四五六日 in Chinese.
 arknights_checkpoint_opening_time = {
     'SK': [1, 3, 5, 6],
     'AP': [1, 4, 6, 7],
