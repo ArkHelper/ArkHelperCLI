@@ -225,10 +225,7 @@ class Device:
         self._asst.start()
 
         # max_wait_time = 50*60
-        while True:
-            if not self._asst.running():
-                break
-
+        while self._asst.running():
             time.sleep(5)
 
-        self.exec_adb(f'shell screencap -p /sdcard/DCIM/AkhCLI_{time.time()}.png')
+        self.exec_adb(f'shell screencap -p /sdcard/DCIM/AkhCLI_{int(time.time())}.png')
