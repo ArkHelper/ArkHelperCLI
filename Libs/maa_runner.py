@@ -203,8 +203,8 @@ class Device:
             )[0]
 
             if distribute_task:
-                self.run_task(distribute_task)
                 self._shared_tasks.remove(distribute_task)
+                self.run_task(distribute_task)
             else:
                 logging.info(f'{self._asst_str} finished all tasks and self.run() exited.')
                 break
