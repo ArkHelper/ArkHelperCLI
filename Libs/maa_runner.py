@@ -194,22 +194,20 @@ class Device:
 
     def run(self):
         while True:
-            if not self.running():
-                logging.info(f'{self._asst_str} is not running (might finished a task). Device task manager start to distribute task.')
+            logging.info(f'{self._asst_str}\'s Device task manager start to distribute task.')
 
-                distribute_task = (
-                    [task for task in self._shared_tasks if task.get('device') == self.alias] or
-                    [task for task in self._shared_tasks if task.get('device') is None] or
-                    [None]
-                )[0]
+            distribute_task = (
+                [task for task in self._shared_tasks if task.get('device') == self.alias] or
+                [task for task in self._shared_tasks if task.get('device') is None] or
+                [None]
+            )[0]
 
-                if distribute_task:
-                    self.run_task(distribute_task)
-                    self._shared_tasks.remove(distribute_task)
-                else:
-                    logging.info(f'{self._asst_str} finished all tasks and self.run() exited.')
-                    break
-            time.sleep(5)
+            if distribute_task:
+                self.run_task(distribute_task)
+                self._shared_tasks.remove(distribute_task)
+            else:
+                logging.info(f'{self._asst_str} finished all tasks and self.run() exited.')
+                break
 
     def run_task(self, task):
         logging.info(f'{self._asst_str} start run task {task}')
@@ -224,5 +222,13 @@ class Device:
 
         add_personal_tasks(self._asst, task)
 
-        # max_wait_time = 50*60
         self._asst.start()
+
+        # max_wait_time = 50*60
+        while True:
+            if not self._asst.running():
+                break
+
+            time.sleep(5)
+
+        self.exec_adb(f'shell screencap -p /sdcard/DCIM/AkhCLI_{time.time()}.png')
