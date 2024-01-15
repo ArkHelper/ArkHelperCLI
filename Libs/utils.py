@@ -141,7 +141,7 @@ arknights_checkpoint_opening_time = {
     'PR-D': [2, 3, 6, 7]
 }
 
-arknights_pack_name = {
+arknights_package_name = {
     'Official': 'com.hypergryph.arknights',
     'Bilibili': 'com.hypergryph.arknights.bilibili',
     'YoStarJP': 'com.YoStarJP.Arknights',

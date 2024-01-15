@@ -3,7 +3,7 @@ import random
 import subprocess
 from Libs.MAA.asst.asst import Asst
 from Libs.maa_util import asst_callback, asst_tostr, load_res, update_nav
-from Libs.utils import kill_processes_by_name, random_choice_with_weights, read_config, read_yaml, arknights_checkpoint_opening_time, get_game_week, arknights_pack_name
+from Libs.utils import kill_processes_by_name, random_choice_with_weights, read_config, read_yaml, arknights_checkpoint_opening_time, get_game_week, arknights_package_name
 import var
 
 import logging
@@ -212,13 +212,18 @@ class Device:
     def run_task(self, task):
         logging.info(f'{self._asst_str} start run task {task}')
 
-        server = [maa_task for maa_task in task['task'] if maa_task['task_name'] == 'StartUp'][0]['task_config']['client_type']
+        task_server = [maa_task for maa_task in task['task'] if maa_task['task_name'] == 'StartUp'][0]['task_config']['client_type']
+        package_name = arknights_package_name[task_server]
 
-        self.exec_adb(f'shell am start -n {arknights_pack_name[server]}/com.u8.sdk.U8UnityContext')
+        if self._current_server is not None and self._current_server != task_server:
+            self.exec_adb(f'shell am force-stop {arknights_package_name[self._current_server]}')
+
+        self.exec_adb(f'shell am start -n {package_name}/com.u8.sdk.U8UnityContext')
+        self._current_server = task_server
         time.sleep(15)
 
-        if self._current_server != server.replace('Bilibili', 'Official'):
-            load_res(self._asst, server.replace('Bilibili', 'Official'))
+        if self._current_server != task_server.replace('Bilibili', 'Official'):
+            load_res(self._asst, task_server.replace('Bilibili', 'Official'))
 
         add_personal_tasks(self._asst, task)
 
