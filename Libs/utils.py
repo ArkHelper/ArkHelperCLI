@@ -83,8 +83,13 @@ def read_config(config_name):
 
 
 def get_logging_handlers(file_level, console_level):
-    file_handler = logging.FileHandler(
-        str(var.cli_env / 'Log' / 'log.log'), encoding='utf-8')
+    log_file = var.cli_env / 'Log' / 'log.log'
+
+    if not log_file.exists():
+        log_file.parent.mkdir()
+        log_file.touch()
+
+    file_handler = logging.FileHandler(str(log_file), encoding='utf-8')
     file_handler.setLevel(file_level)
 
     console_handler = logging.StreamHandler()
