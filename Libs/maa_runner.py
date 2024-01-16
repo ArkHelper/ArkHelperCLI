@@ -218,15 +218,16 @@ class Device:
         task_server = [maa_task for maa_task in task['task'] if maa_task['task_name'] == 'StartUp'][0]['task_config']['client_type']
         package_name = arknights_package_name[task_server]
 
-        if self._current_server not in [task_server,None]:
+        if self._current_server not in [task_server, None]:
             self.exec_adb(f'shell am force-stop {arknights_package_name[self._current_server]}')
 
         self.exec_adb(f'shell am start -n {package_name}/com.u8.sdk.U8UnityContext')
-        self._current_server = task_server
         time.sleep(15)
 
         if self._current_server != task_server.replace('Bilibili', 'Official'):
             load_res(self._asst, task_server.replace('Bilibili', 'Official'))
+
+        self._current_server = task_server
 
         add_personal_tasks(self._asst, task)
 
