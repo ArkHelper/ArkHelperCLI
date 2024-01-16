@@ -58,7 +58,7 @@ def read_file(path):
         return file.read()
 
 
-def read_yaml(path):
+def read_json(path):
     return json.loads(read_file(path))
 
 def read_yaml(path):
