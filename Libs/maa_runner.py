@@ -1,9 +1,12 @@
+import datetime
+from fileinput import filename
 from multiprocessing import Process
 import random
 import subprocess
+from tkinter.tix import Tree
 from Libs.MAA.asst.asst import Asst
 from Libs.maa_util import asst_callback, asst_tostr, load_res, update_nav
-from Libs.utils import kill_processes_by_name, random_choice_with_weights, read_config, read_yaml, arknights_checkpoint_opening_time, get_game_week, arknights_package_name
+from Libs.utils import kill_processes_by_name, random_choice_with_weights, read_config, read_json, read_yaml, arknights_checkpoint_opening_time, get_game_week, arknights_package_name, write_json
 import var
 
 import logging
@@ -11,6 +14,27 @@ import os
 import time
 import copy
 import multiprocessing
+
+
+def do_conclusion():
+    file_name = r'%y%m%d.json'
+    file_name = datetime.datetime.now().strftime(file_name)
+
+    file = var.cli_env / 'conclusion' / file_name
+
+    def _get_conclusion():
+        return {
+            "msg": 'AkhCLI任务全部完成',
+            "startTime": int(var.start_time*1000),
+            "endTime": int(time.time()*1000),
+            "code": 0,
+            "extra": {}
+        }
+
+    file.parent.mkdir(exist_ok=True)
+    conclusion = _get_conclusion()
+    
+    write_json(file, conclusion)
 
 
 def run_dev(dev, tasks, info):
@@ -54,6 +78,8 @@ def run_all_devs():
         time.sleep(5)
 
     kill_all_emulators()
+
+    do_conclusion()
 
 
 def extend_full_tasks(config):

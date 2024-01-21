@@ -1,6 +1,7 @@
 import pathlib
 import logging
 import var
+import time
 
 from Libs.utils import read_config, get_logging_handlers, parse_arg
 from Libs.maa_runner import run_all_devs
@@ -8,6 +9,7 @@ from Libs.test import test
 
 mode, verbose = parse_arg()
 
+var.start_time = time.time()
 var.cli_env = pathlib.Path(__file__, '../')
 var.asst_res_lib_env = var.cli_env / 'RuntimeComponents' / 'MAA'
 var.global_config = read_config('global')

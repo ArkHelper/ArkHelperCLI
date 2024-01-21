@@ -61,6 +61,7 @@ def read_file(path):
 def read_json(path):
     return json.loads(read_file(path))
 
+
 def read_yaml(path):
     return yaml.safe_load(read_file(path))
 
@@ -71,10 +72,11 @@ def write_file(path, content):
 
 
 def write_json(path, content):
-    write_file(path, json.dumps(content))
+    write_file(path, json.dumps(content, ensure_ascii=False))
+
 
 def write_yaml(path, content):
-    write_file(path, yaml.safe_dump(content)) 
+    write_file(path, yaml.safe_dump(content))
 
 
 def read_config(config_name):
