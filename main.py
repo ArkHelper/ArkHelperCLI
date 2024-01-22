@@ -1,3 +1,4 @@
+from datetime import datetime
 import pathlib
 import logging
 import var
@@ -9,7 +10,7 @@ from Libs.test import test
 
 mode, verbose = parse_arg()
 
-var.start_time = time.time()
+var.start_time = datetime.now()
 var.cli_env = pathlib.Path(__file__, '../')
 var.asst_res_lib_env = var.cli_env / 'RuntimeComponents' / 'MAA'
 var.global_config = read_config('global')

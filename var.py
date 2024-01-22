@@ -1,3 +1,4 @@
+from datetime import datetime
 import pathlib
 import threading
 
@@ -8,4 +9,4 @@ default_personal_config: dict
 cli_env: pathlib.Path
 asst_res_lib_env: pathlib.Path
 verbose: bool
-start_time:int
+start_time:datetime

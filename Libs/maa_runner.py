@@ -17,15 +17,15 @@ import multiprocessing
 
 
 def do_conclusion():
-    file_name = r'%y%m%d.json'
-    file_name = datetime.datetime.now().strftime(file_name)
+    file_name = r'%y-%m-%d-%H-%M-%S.json'
+    file_name = var.start_time.strftime(file_name)
 
     file = var.cli_env / 'conclusion' / file_name
 
     def _get_conclusion():
         return {
             "msg": 'AkhCLI任务全部完成',
-            "startTime": int(var.start_time*1000),
+            "startTime": int(var.start_time.timestamp()*1000),
             "endTime": int(time.time()*1000),
             "code": 0,
             "extra": {}
