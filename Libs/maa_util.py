@@ -1,30 +1,14 @@
 import requests
 from Libs.MAA.asst.asst import Asst
-from Libs.MAA.asst.utils import Message
-from Libs.MAA.asst.asst import Asst
 from Libs.MAA.asst.utils import Message, Version, InstanceOptionType
-from Libs.utils import read_yaml, write_json, read_file, write_file
+from Libs.utils import read_json, read_yaml, write_json, read_file, write_file
 import var
 
 import pathlib
 import os
 import logging
 import json
-import logging
-from datetime import datetime
 from typing import Union, Optional
-import pytz
-
-
-@Asst.CallBackType
-def asst_callback(msg, details, arg):
-    try:
-        m = Message(msg)
-        # d = json.loads(details.decode('utf-8'))
-        d = details.decode('utf-8')
-        logging.debug(f'got callback from asst inst: {m},{arg},{d}')
-    except:
-        pass
 
 
 def asst_tostr(emulator_address):
@@ -50,7 +34,7 @@ def update_nav():
     last_update_time_file_server = 'https://ota.maa.plus/MaaAssistantArknights/api/lastUpdateTime.json'
     last_update_time_file_local = path / 'cache' / 'resource' / 'lastUpdateTime.json'
     try:
-        last_update_time_local = read_yaml(last_update_time_file_local)['timestamp']
+        last_update_time_local = read_json(last_update_time_file_local)['timestamp']
     except:
         last_update_time_file_local.parent.mkdir(parents=True, exist_ok=True)
         write_file(last_update_time_file_local, '')

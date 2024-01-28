@@ -2,10 +2,9 @@ from datetime import datetime
 import pathlib
 import logging
 import var
-import time
 
 from Libs.utils import read_config, get_logging_handlers, parse_arg
-from Libs.maa_runner import run_all_devs
+from Libs.maa_runner import run
 from Libs.test import test
 
 mode, verbose = parse_arg()
@@ -16,7 +15,6 @@ var.asst_res_lib_env = var.cli_env / 'RuntimeComponents' / 'MAA'
 var.global_config = read_config('global')
 var.personal_configs = read_config('personal')
 var.default_personal_config = read_config('default_personal')
-var.tasks = []
 var.verbose = verbose
 
 logging.basicConfig(level=logging.DEBUG,
@@ -32,7 +30,7 @@ if __name__ == '__main__':
         if mode == 'test':
             test()
         elif mode == 'run':
-            run_all_devs()
+            run()
 
     except Exception as e:
         logging.error(f"An expected error was occured when running:", exc_info=True)
