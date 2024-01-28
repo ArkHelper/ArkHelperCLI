@@ -2,7 +2,7 @@ from Libs.MAA.asst.asst import Asst
 from Libs.MAA.asst.utils import Message
 from Libs.MAA.asst.asst import Asst
 from Libs.maa_util import asst_tostr, load_res_for_asst, update_nav
-from Libs.utils import kill_processes_by_name, random_choice_with_weights, read_config, read_json, read_yaml, arknights_checkpoint_opening_time, get_game_week, arknights_package_name, write_json
+from Libs.utils import exec_adb_cmd, kill_processes_by_name, random_choice_with_weights, read_config, read_json, read_yaml, arknights_checkpoint_opening_time, get_game_week, arknights_package_name, write_json
 import var
 
 
@@ -35,7 +35,7 @@ def add_personal_tasks(asst: Asst, config):
 
 class Device:
     def __init__(self, dev_config) -> None:
-        self._adb_path = os.path.abspath(dev_config['adb_path'])
+        self._adb_path = var.global_config['adb_path']
         self._start_path = dev_config['start_path']
         self.emulator_addr = dev_config['emulator_address']
         self.running_task = None
@@ -49,16 +49,7 @@ class Device:
         return self._str
 
     def exec_adb(self, cmd: str):
-        try:
-            cmd_ls = cmd.split(' ')
-            adb_command = [self._adb_path, '-s', self.emulator_addr]
-            adb_command.extend(cmd_ls)
-
-            result = subprocess.run(adb_command, capture_output=True, text=True, check=True, encoding='utf-8')
-            logging.debug(f'adb output: {result.stdout}')
-        except subprocess.CalledProcessError as e:
-            logging.debug(f'adb exec error: {e.stderr}')
-        pass
+        exec_adb_cmd(cmd, self.emulator_addr)
 
     def connect(self):
         _execedStart = False
@@ -85,13 +76,13 @@ class Device:
 
         task_server = task['server']
         package_name = arknights_package_name[task_server]
-        if self._current_server != task_server.replace('Bilibili','Official'):
+        if self._current_server != task_server.replace('Bilibili', 'Official'):
             self._asst = Asst(var.asst_res_lib_env, var.asst_res_lib_env / f'userDir_{self.alias}', asst_callback)
             load_res_for_asst(self._asst, task_server)
             self.connect()
 
         if self._current_server != task_server:
-            self.exec_adb(f'shell am force-stop {package_name}')
+            self.exec_adb(f'shell am force-stop {arknights_package_name[self._current_server]}')
             self.exec_adb(f'shell am start -n {package_name}/com.u8.sdk.U8UnityContext')
             time.sleep(15)
         add_personal_tasks(self._asst, task)
@@ -136,7 +127,7 @@ def start_process(shared_status, static_process_detail):
                     tasks.remove(distribute_task)
                     dev.run_task(distribute_task)
                 except:
-                    #result.append()
+                    # result.append()
                     pass
             else:
                 logging.info(f'{dev} finished all tasks and process {process_pid} will exit.')

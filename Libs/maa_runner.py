@@ -1,10 +1,7 @@
 import json
 from multiprocessing import Process
-import subprocess
-from xml.dom import IndexSizeErr
-from Libs.MAA.asst.asst import Asst
 from Libs.maa_util import asst_tostr, load_res_for_asst, update_nav
-from Libs.utils import kill_processes_by_name, random_choice_with_weights, read_config, read_json, read_yaml, arknights_checkpoint_opening_time, get_game_week, arknights_package_name, write_json
+from Libs.utils import exec_adb_cmd,kill_processes_by_name, random_choice_with_weights, read_config, read_json, read_yaml, arknights_checkpoint_opening_time, get_game_week, arknights_package_name, write_json
 import var
 from Libs.process_runner import start_process
 
@@ -44,8 +41,9 @@ def kill_all_emulators():
 
 
 def run():
-    # dev.exec_adb('start-server')
     update_nav()
+    exec_adb_cmd('kill-server')
+    exec_adb_cmd('start-server')
     kill_all_emulators()
 
     tasks = multiprocessing.Manager().list()

@@ -17,6 +17,22 @@ from jsonschema import validate
 from datetime import datetime
 from datetime import timedelta
 
+def exec_adb_cmd(cmd,device=None):
+    try:
+        adb_path = var.global_config['adb_path']
+        cmd_ls = cmd.split(' ')
+        adb_command = [adb_path]
+        if device:
+            adb_command.extend(['-s', device])
+        adb_command.extend(cmd_ls)
+
+        logging.debug(f'execing adb cmd: {" ".join(adb_command)}')
+        result = subprocess.run(adb_command, capture_output=True, text=True, check=True, encoding='utf-8')
+        logging.debug(f'adb output: {result.stdout}')
+    except subprocess.CalledProcessError as e:
+        logging.debug(f'adb exec error: {e.stderr}')
+    pass
+
 
 def parse_arg():
     parser = argparse.ArgumentParser(add_help=False)
