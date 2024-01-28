@@ -15,7 +15,7 @@ def asst_tostr(emulator_address):
     return f'asst instance({emulator_address})'
 
 
-def load_res(asst: Asst, client_type: Optional[Union[str, None]] = None):
+def load_res_for_asst(asst: Asst, client_type: Optional[Union[str, None]] = None):
     incr: pathlib.Path
     if client_type in ['Official', 'Bilibili', None]:
         incr = var.asst_res_lib_env / 'cache'

@@ -1,7 +1,7 @@
 from Libs.MAA.asst.asst import Asst
 from Libs.MAA.asst.utils import Message
 from Libs.MAA.asst.asst import Asst
-from Libs.maa_util import asst_tostr, load_res, update_nav
+from Libs.maa_util import asst_tostr, load_res_for_asst, update_nav
 from Libs.utils import kill_processes_by_name, random_choice_with_weights, read_config, read_json, read_yaml, arknights_checkpoint_opening_time, get_game_week, arknights_package_name, write_json
 import var
 
@@ -40,10 +40,10 @@ class Device:
         self.emulator_addr = dev_config['emulator_address']
         self.running_task = None
         self.alias = dev_config['alias']
+        self._asst = None
         self._connected = False
-        self._current_server = None
-        self._asst = Asst(var.asst_res_lib_env, var.asst_res_lib_env / f'userDir_{self.alias}', asst_callback)
         self._str = f'device & asst instance {self.alias}({self.emulator_addr})'
+        self._current_server = None
 
     def __str__(self) -> str:
         return self._str
@@ -73,36 +73,41 @@ class Device:
                 os.startfile(os.path.abspath(self._start_path))  # 程序结束后会自动关闭？！
                 _execedStart = True
                 logging.debug(f'{self} started emulator at {self._start_path}')
-            
+
             time.sleep(2)
         self._connected = True
 
     def running(self):
         return self._asst.running()
-    
+
     def run_task(self, task):
         logging.info(f'{self} start run task {task["hash"]}')
 
-        task_server = [maa_task for maa_task in task['task'] if maa_task['task_name'] == 'StartUp'][0]['task_config']['client_type']
+        task_server = task['server']
         package_name = arknights_package_name[task_server]
+        if self._current_server != task_server.replace('Bilibili','Official'):
+            self._asst = Asst(var.asst_res_lib_env, var.asst_res_lib_env / f'userDir_{self.alias}', asst_callback)
+            load_res_for_asst(self._asst, task_server)
+            self.connect()
 
-        if self._current_server not in [task_server, None]:
-            self.exec_adb(f'shell am force-stop {arknights_package_name[self._current_server]}')
-        self.exec_adb(f'shell am start -n {package_name}/com.u8.sdk.U8UnityContext')
-        time.sleep(15)
-
-        if self._current_server != task_server.replace('Bilibili', 'Official'):
-            load_res(self._asst, task_server.replace('Bilibili', 'Official'))
-
-        self._current_server = task_server
-
+        if self._current_server != task_server:
+            self.exec_adb(f'shell am force-stop {package_name}')
+            self.exec_adb(f'shell am start -n {package_name}/com.u8.sdk.U8UnityContext')
+            time.sleep(15)
         add_personal_tasks(self._asst, task)
-
+        self._current_server = task_server
         self._asst.start()
 
-        # max_wait_time = 50*60
+        max_wait_time = 30*60  # second
+        already_waited_time = 0
         while self._asst.running():
-            time.sleep(5)
+            interval = 5
+            time.sleep(interval)
+            already_waited_time += interval
+
+            if already_waited_time > max_wait_time:
+                self._asst.stop()
+                break
 
         self.exec_adb(f'shell screencap -p /sdcard/DCIM/AkhCLI_{int(time.time())}.png')
 
@@ -116,7 +121,6 @@ def start_process(shared_status, static_process_detail):
         process_pid = static_process_detail['pid']
 
         dev = Device(device_info)
-        dev.connect()
 
         while True:
             logging.info(f'Process {process_pid} start to distribute task to {dev}.')
@@ -128,8 +132,12 @@ def start_process(shared_status, static_process_detail):
             )[0]
 
             if distribute_task:
-                tasks.remove(distribute_task)
-                dev.run_task(distribute_task)
+                try:
+                    tasks.remove(distribute_task)
+                    dev.run_task(distribute_task)
+                except:
+                    #result.append()
+                    pass
             else:
                 logging.info(f'{dev} finished all tasks and process {process_pid} will exit.')
                 break

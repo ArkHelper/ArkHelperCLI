@@ -3,7 +3,7 @@ import pathlib
 import logging
 import var
 
-from Libs.utils import read_config, get_logging_handlers, parse_arg
+from Libs.utils import fix_log_file,read_config, get_logging_handlers, parse_arg
 from Libs.maa_runner import run
 from Libs.test import test
 
@@ -16,6 +16,8 @@ var.global_config = read_config('global')
 var.personal_configs = read_config('personal')
 var.default_personal_config = read_config('default_personal')
 var.verbose = verbose
+
+fix_log_file()
 
 logging.basicConfig(level=logging.DEBUG,
                     handlers=get_logging_handlers(logging.DEBUG, logging.DEBUG if var.verbose else logging.INFO),

@@ -88,7 +88,7 @@ def get_logging_handlers(file_level, console_level):
     log_file = var.cli_env / 'Log' / 'log.log'
 
     if not log_file.exists():
-        log_file.parent.mkdir()
+        log_file.parent.mkdir(exist_ok=True)
         log_file.touch()
 
     file_handler = logging.FileHandler(str(log_file), encoding='utf-8')
@@ -128,6 +128,18 @@ def get_game_week(server):
     Returns an Int in 1~7, which means 周一二三四五六日 in Chinese.
     '''
     return get_game_time(server).weekday() + 1
+
+def byte_to_MB(byte):
+    return byte / (1024**2)
+
+def fix_log_file():
+    log_file = var.cli_env / 'Log' / 'log.log'
+    log_backup_file = var.cli_env / 'Log' / 'log.log.bak'
+    if log_file.exists():
+        if byte_to_MB(log_file.stat().st_size) > 100:
+            if log_backup_file.exists():
+                log_backup_file.unlink()
+            log_file.rename(log_backup_file)
 
 
 # checkpoint_opening_time, 1~7 means 周一二三四五六日 in Chinese.

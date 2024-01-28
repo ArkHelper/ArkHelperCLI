@@ -3,7 +3,7 @@ from multiprocessing import Process
 import subprocess
 from xml.dom import IndexSizeErr
 from Libs.MAA.asst.asst import Asst
-from Libs.maa_util import asst_tostr, load_res, update_nav
+from Libs.maa_util import asst_tostr, load_res_for_asst, update_nav
 from Libs.utils import kill_processes_by_name, random_choice_with_weights, read_config, read_json, read_yaml, arknights_checkpoint_opening_time, get_game_week, arknights_package_name, write_json
 import var
 from Libs.process_runner import start_process
@@ -143,7 +143,8 @@ def extend_full_tasks(config):
 
     task = {
         'task': final_tasks,
-        'device': config.get('device', None)
+        'device': config.get('device', None),
+        'server': server
     }
     task_hash = hash(json.dumps(task, ensure_ascii=False))
     logging.debug(f'Generated hash {task_hash} for task: {task}')
