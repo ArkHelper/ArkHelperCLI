@@ -1,9 +1,5 @@
-import datetime
-from fileinput import filename
 from multiprocessing import Process
-import random
 import subprocess
-from tkinter.tix import Tree
 from Libs.MAA.asst.asst import Asst
 from Libs.maa_util import asst_callback, asst_tostr, load_res, update_nav
 from Libs.utils import kill_processes_by_name, random_choice_with_weights, read_config, read_json, read_yaml, arknights_checkpoint_opening_time, get_game_week, arknights_package_name, write_json
