@@ -9,19 +9,22 @@ import var
 import logging
 import os
 import time
+import json
 import copy
 import multiprocessing
 from multiprocessing import Process
 import subprocess
+
+dev: 'Device' = None
 
 
 @Asst.CallBackType
 def asst_callback(msg, details, arg):
     try:
         m = Message(msg)
-        # d = json.loads(details.decode('utf-8'))
-        d = details.decode('utf-8')
-        logging.debug(f'got callback from asst inst: {m},{arg},{d}')
+        d = json.loads(details.decode('utf-8'))
+        # d = details.decode('utf-8')
+        dev.process_callback(m, d, arg)
     except:
         pass
 
@@ -44,9 +47,15 @@ class Device:
         self._connected = False
         self._str = f'device & asst instance {self.alias}({self.emulator_addr})'
         self._current_server = None
+        self._running = False
 
     def __str__(self) -> str:
         return self._str
+
+    def process_callback(self, msg:Message, details:dict, arg):
+        if msg == Message.TaskChainStart:
+            pass
+        logging.debug(f'{self} got callback: {msg},{arg},{details}')
 
     def exec_adb(self, cmd: str):
         exec_adb_cmd(cmd, self.emulator_addr)
@@ -71,7 +80,7 @@ class Device:
     def running(self):
         return self._asst.running()
 
-    def run_task(self, task):
+    def run_task(self, task) -> dict:
         logging.info(f'{self} start run task {task["hash"]}')
 
         task_server = task['server']
@@ -112,6 +121,7 @@ def start_process(shared_status, static_process_detail):
         device_info = static_process_detail['device']
         process_pid = static_process_detail['pid']
 
+        global dev
         dev = Device(device_info)
 
         while True:
