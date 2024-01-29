@@ -82,7 +82,8 @@ class Device:
             self.connect()
 
         if self._current_server != task_server:
-            self.exec_adb(f'shell am force-stop {arknights_package_name[self._current_server]}')
+            if self._current_server:
+                self.exec_adb(f'shell am force-stop {arknights_package_name[self._current_server]}')
             self.exec_adb(f'shell am start -n {package_name}/com.u8.sdk.U8UnityContext')
             time.sleep(15)
         add_personal_tasks(self._asst, task)
@@ -126,7 +127,7 @@ def start_process(shared_status, static_process_detail):
                 try:
                     tasks.remove(distribute_task)
                     dev.run_task(distribute_task)
-                except:
+                except Exception as e:
                     # result.append()
                     pass
             else:
