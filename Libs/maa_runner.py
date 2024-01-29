@@ -11,7 +11,7 @@ import time
 import copy
 import multiprocessing
 
-
+#TODO: using task running result
 def do_conclusion():
     file_name = r'%y-%m-%d-%H-%M-%S.json'
     file_name = var.start_time.strftime(file_name)
@@ -35,7 +35,6 @@ def do_conclusion():
 
 def kill_all_emulators():
     for process in var.global_config['devices']:
-        logging.info(f'trying to kill {process}')
         for process_name in process['process_name']:
             kill_processes_by_name(process_name)
 
@@ -69,7 +68,6 @@ def run():
 
 def extend_full_tasks(config):
     final_tasks: list = []
-
     overrides = config['override']
     black_task_names = config.get('blacklist', [])
     server = ''

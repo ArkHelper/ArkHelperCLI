@@ -35,4 +35,4 @@ if __name__ == '__main__':
             run()
 
     except Exception as e:
-        logging.error(f"An expected error was occured when running:", exc_info=True)
+        logging.error(f"An expected error was occured when running: {e}", exc_info=True)

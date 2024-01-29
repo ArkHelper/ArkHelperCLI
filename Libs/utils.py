@@ -117,7 +117,7 @@ def get_logging_handlers(file_level, console_level):
 
 
 def kill_processes_by_name(process_name) -> bool:
-    logging.debug(f'killing process {process_name}')
+    logging.info(f'killing process {process_name}')
     try:
         result = subprocess.run(['taskkill', '/F', '/IM', f'{process_name}.exe'], check=True, capture_output=True, text=True)
         logging.debug(f'killing result:{result.stdout}')

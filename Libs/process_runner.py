@@ -76,7 +76,7 @@ class Device:
             if not _execedStart and self._start_path is not None:
                 os.startfile(os.path.abspath(self._start_path))  # 程序结束后会自动关闭？！
                 _execedStart = True
-                logging.debug(f'{self} started emulator at {self._start_path}')
+                logging.info(f'{self} started emulator at {self._start_path}')
 
             time.sleep(2)
         self._connected = True
@@ -97,8 +97,8 @@ class Device:
         if self._current_server != task_server:
             if self._current_server:
                 self.exec_adb(f'shell am force-stop {arknights_package_name[self._current_server]}')
-            self.exec_adb(f'shell am start -n {package_name}/com.u8.sdk.U8UnityContext')
-            time.sleep(15)
+            #FIXME:self.exec_adb(f'shell am start -n {package_name}/com.u8.sdk.U8UnityContext')
+            #FIXME:time.sleep(15)
             self._current_server = task_server
 
         remain_time = 30*60  # sec
@@ -110,9 +110,9 @@ class Device:
 
     #TODO:need pref
     def run_maatask(self, maatask, max_time) -> dict:
-        logging.info(f'{self} start run maatask {maatask}')
         type = maatask['task_name']
         config = maatask['task_config']
+        logging.info(f'{self} start maatask {type}, max_time={max_time}.')
         this_time_cost = 0
 
         i = 0
@@ -133,7 +133,7 @@ class Device:
                 break
 
         succeed = self._current_maatask_status[0] == Message.TaskChainCompleted and max_time > this_time_cost
-
+        logging.info(f'{self} finished maatask {type} (succeed:{succeed}) may beacuse of {self._current_maatask_status[0].name}, cost {this_time_cost} sec. (max {max_time})')
         return {
             "exec_result": {
                 "succeed": succeed,
@@ -145,18 +145,18 @@ class Device:
 
 
 def start_process(shared_status, static_process_detail):
-    result = shared_status['result']
     try:
+        result = shared_status['result']
         tasks = shared_status['tasks']
-
         device_info = static_process_detail['device']
         process_pid = static_process_detail['pid']
-
+        process_str = f"process{process_pid}"
         global dev
         dev = Device(device_info)
+        logging.info(f"{process_str} created which binds device {dev}.")
 
         while True:
-            logging.info(f'Process {process_pid} start to distribute task to {dev}.')
+            logging.debug(f'{process_str} start to distribute task to {dev}.')
 
             distribute_task = (
                 [task for task in tasks if task.get('device') == dev.alias] or
@@ -166,13 +166,15 @@ def start_process(shared_status, static_process_detail):
 
             if distribute_task:
                 try:
+                    logging.debug(f'Distribute task {distribute_task["hash"]} to {dev}')
                     tasks.remove(distribute_task)
                     dev.run_task(distribute_task)
                 except Exception as e:
                     # result.append()
                     pass
             else:
-                logging.info(f'{dev} finished all tasks and process {process_pid} will exit.')
+                logging.info(f'{dev} finished all tasks.')
+                logging.debug(f'{process_str} will exit.')
                 break
     except Exception as e:
-        logging.error(f"An expected error was occured in process {process_pid} when running: {str(e)}", exc_info=True)
+        logging.error(f"An expected error was occured in {process_str} when running: {str(e)}", exc_info=True)
