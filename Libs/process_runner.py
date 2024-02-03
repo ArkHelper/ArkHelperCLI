@@ -49,7 +49,7 @@ class Device:
         self.alias = dev_config['alias']
         self._asst = None
         self._connected = False
-        self._str = f'device & asst instance {self.alias}({self.emulator_addr})'
+        self._str = f'device {self.alias}({self.emulator_addr})'
         self._current_server = None
         self._current_maatask_status: tuple[Message, dict, object] = (None, None, None)
 
@@ -57,9 +57,10 @@ class Device:
         return self._str
 
     def process_callback(self, msg: Message, details: dict, arg):
+        logging.debug(f'{self} got callback: {msg},{arg},{details}')
         if msg in [Message.TaskChainExtraInfo, Message.TaskChainCompleted, Message.TaskChainError, Message.TaskChainStopped, Message.TaskChainStart]:
             self._current_maatask_status = (msg, details, arg)
-        logging.debug(f'{self} got callback: {msg},{arg},{details}')
+            logging.debug(f'{self} _current_maatask_status turned to {self._current_maatask_status} according to callback.')
 
     def exec_adb(self, cmd: str):
         exec_adb_cmd(cmd, self.emulator_addr)
@@ -97,50 +98,65 @@ class Device:
         if self._current_server != task_server:
             if self._current_server:
                 self.exec_adb(f'shell am force-stop {arknights_package_name[self._current_server]}')
-            #FIXME:self.exec_adb(f'shell am start -n {package_name}/com.u8.sdk.U8UnityContext')
-            #FIXME:time.sleep(15)
             self._current_server = task_server
 
         remain_time = 30*60  # sec
         for maatask in task['task']:
-            run_result = self.run_maatask(maatask, remain_time)
-            remain_time -= run_result['time_cost']
+            if remain_time > 0:
+                run_result = self.run_maatask(maatask, remain_time)
+                remain_time = run_result['time_remain']
 
         self.exec_adb(f'shell screencap -p /sdcard/DCIM/AkhCLI_{int(time.time())}.png')
 
     #TODO:need pref
-    def run_maatask(self, maatask, max_time) -> dict:
+    def run_maatask(self, maatask, time_remain) -> dict:
         type = maatask['task_name']
         config = maatask['task_config']
-        logging.info(f'{self} start maatask {type}, max_time={max_time}.')
-        this_time_cost = 0
+        logging.info(f'{self} start maatask {type}, time {time_remain} sec.')
 
         i = 0
         max_retry_time = 4
         for i in range(max_retry_time+1):
+            logging.info(f'{self} maatask {type} {i+1}st trying...')
             add_maatask(self._asst, maatask)
             self._asst.start()
+            asst_stop_invoked = False
+            interval = 5
             while self._asst.running():
-                interval = 5
                 time.sleep(interval)
-                this_time_cost += interval
-                if max_time <= this_time_cost:
-                    self._asst.stop()
-                    break
+                time_remain -= interval
+                if time_remain < 0:
+                    if not asst_stop_invoked:
+                        self._asst.stop()
+                        asst_stop_invoked = True
             if self._current_maatask_status[0] == Message.TaskChainError:
                 continue
+            elif self._current_maatask_status[0] == Message.TaskChainStopped:
+                break
             else:
                 break
 
-        succeed = self._current_maatask_status[0] == Message.TaskChainCompleted and max_time > this_time_cost
-        logging.info(f'{self} finished maatask {type} (succeed:{succeed}) may beacuse of {self._current_maatask_status[0].name}, cost {this_time_cost} sec. (max {max_time})')
+        status_message = self._current_maatask_status[0]
+        status_ok = status_message == Message.TaskChainCompleted
+        time_ok = time_remain >= 0
+        succeed = status_ok and time_ok
+        if succeed:
+            reason = status_message.name
+        else:
+            reason = ""
+            if not status_ok:
+                reason += status_message.name
+            else:
+                reason += f'Timeout'
+
+        logging.info(f'{self} finished maatask {type} (succeed: {succeed}) beacuse of {reason}, remain {time_remain} sec.')
         return {
             "exec_result": {
                 "succeed": succeed,
-                "reason": self._current_maatask_status[0].name if max_time > this_time_cost else 'timeout',
+                "reason": reason,
                 "tried_times": i+1
             },
-            "time_cost": this_time_cost
+            "time_remain": time_remain
         }
 
 
