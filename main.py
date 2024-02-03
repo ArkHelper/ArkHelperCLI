@@ -11,10 +11,10 @@ mode, verbose = parse_arg()
 
 var.start_time = datetime.now()
 var.cli_env = pathlib.Path(__file__, '../')
-var.asst_res_lib_env = var.cli_env / 'RuntimeComponents' / 'MAA'
 var.global_config = read_config('global')
 var.personal_configs = read_config('personal')
 var.default_personal_config = read_config('default_personal')
+var.asst_res_lib_env = pathlib.Path(var.global_config['maa_path'])
 var.verbose = verbose
 
 fix_log_file()

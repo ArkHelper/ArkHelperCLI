@@ -4,10 +4,8 @@
 ## deploy/dev
 1. ``` git clone https://github.com/ArkHelper/ArkHelperCLI ```  
 1. ``` cd ArkHelperCLI ``` 
-1. Create folder ``` ArkHelperCLI/RuntimeComponents/MAA ``` 
-1. Copy **MaaCore.dll** file and **resource** folder to ```ArkHelperCLI/RuntimeComponents/MAA```(Just confirm these objects are in the folder. Therefore, you can compile MAA's **MAACore** and **SyncRes** projects source and copy the output to this folder, or you can directly extract MAA's release package here. )
 1. Create folder ``` ArkHelperCLI/Config ``` 
-1. Make Config (details below)
+1. Make configs (details below)
 1. Install requirements via pip
 1. ``` python main.py ```
 
