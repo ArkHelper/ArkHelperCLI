@@ -100,7 +100,7 @@ class Device:
                 self.exec_adb(f'shell am force-stop {arknights_package_name[self._current_server]}')
             self._current_server = task_server
 
-        remain_time = 30*60  # sec
+        remain_time = 2*60*60  # sec
         for maatask in task['task']:
             if remain_time > 0:
                 run_result = self.run_maatask(maatask, remain_time)
@@ -126,7 +126,7 @@ class Device:
                 time.sleep(interval)
                 time_remain -= interval
                 if time_remain < 0:
-                    if not asst_stop_invoked:
+                    if not asst_stop_invoked and type != "Fight":
                         self._asst.stop()
                         asst_stop_invoked = True
             if self._current_maatask_status[0] == Message.TaskChainError:
@@ -144,10 +144,10 @@ class Device:
             reason = status_message.name
         else:
             reason = ""
-            if not status_ok:
-                reason += status_message.name
-            else:
-                reason += f'Timeout'
+            if status_message == Message.TaskChainError:
+                reason = status_message.name
+            if not time_ok:
+                reason = 'Timeout'
 
         logging.info(f'{self} finished maatask {type} (succeed: {succeed}) beacuse of {reason}, remain {time_remain} sec.')
         return {
