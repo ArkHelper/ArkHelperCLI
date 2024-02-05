@@ -91,6 +91,7 @@ class Device:
         task_server = task['server']
         package_name = arknights_package_name[task_server]
         if self._current_server != task_server.replace('Bilibili', 'Official'):
+            del self._asst
             self._asst = Asst(var.asst_res_lib_env, var.asst_res_lib_env / f'userDir_{self.alias}', asst_callback)
             load_res_for_asst(self._asst, task_server)
             self.connect()
@@ -108,7 +109,6 @@ class Device:
 
         self.exec_adb(f'shell screencap -p /sdcard/DCIM/AkhCLI_{int(time.time())}.png')
 
-    #TODO:need pref
     def run_maatask(self, maatask, time_remain) -> dict:
         type = maatask['task_name']
         config = maatask['task_config']
