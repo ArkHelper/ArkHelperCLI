@@ -5,11 +5,11 @@ devices:
     emulator_address: 127.0.0.1:16384
     start_path: C:\mumu.lnk
     process_name:
-      - MuMuVMMHeadless
-      - MuMuPlayer
+      - MuMuVMMHeadless.exe
+      - MuMuPlayer.exe
   - alias: mumu1
     emulator_address: 127.0.0.1:16416
     start_path: ./../mumu1.lnk # both absolute and relative is ok for a path
     process_name:
-      - MuMuVMMHeadless
-      - MuMuPlayer
+      - MuMuVMMHeadless.exe
+      - MuMuPlayer.exe

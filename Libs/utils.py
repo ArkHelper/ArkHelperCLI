@@ -1,4 +1,5 @@
 import json
+from multiprocessing.spawn import get_command_line
 import pathlib
 import logging
 import random
@@ -17,7 +18,33 @@ from jsonschema import validate
 from datetime import datetime
 from datetime import timedelta
 
-def exec_adb_cmd(cmd,device=None):
+
+def is_process_running(process_name):
+    for process in psutil.process_iter(['name']):
+        try:
+            process_info = process.info
+            if process_info['name'] == process_name:
+                return True
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            pass
+    return False
+
+
+def get_pid_by_port(port):
+    for conn in psutil.net_connections(kind='inet'):
+        if conn.laddr.port == port:
+            return conn.pid
+    return None
+
+
+def get_process_info(pid):
+    try:
+        process = psutil.Process(pid)
+    except psutil.NoSuchProcess as e:
+        logging.error(f"Get process failed: {e}")
+
+
+def exec_adb_cmd(cmd, device=None):
     try:
         adb_path = var.global_config['adb_path']
         cmd_ls = cmd.split(' ')
@@ -30,7 +57,7 @@ def exec_adb_cmd(cmd,device=None):
         result = subprocess.run(adb_command, capture_output=True, text=True, check=True, encoding='utf-8')
         logging.debug(f'adb output: {result.stdout}')
     except subprocess.CalledProcessError as e:
-        logging.debug(f'adb exec error: {e.stderr}')
+        logging.error(f'adb exec error: {e.stderr}')
     pass
 
 
@@ -100,7 +127,8 @@ def read_config(config_name):
     return data
 
 
-def get_logging_handlers(file_level, console_level):
+def get_logging_handlers():
+    file_level, console_level = logging.DEBUG, logging.DEBUG if var.verbose else logging.INFO
     log_file = var.cli_env / 'Log' / 'log.log'
 
     if not log_file.exists():
@@ -119,12 +147,84 @@ def get_logging_handlers(file_level, console_level):
 def kill_processes_by_name(process_name) -> bool:
     logging.info(f'killing process {process_name}')
     try:
-        result = subprocess.run(['taskkill', '/F', '/IM', f'{process_name}.exe'], check=True, capture_output=True, text=True)
+        result = subprocess.run(['taskkill', '/F', '/IM', f'{process_name}'], check=True, capture_output=True, text=True)
         logging.debug(f'killing result:{result.stdout}')
         return True
     except subprocess.CalledProcessError as e:
-        logging.debug(f'killing result:{e.stderr}')
+        logging.error(f'killing result:{e.stderr}')
         return False
+
+
+def kill_processes_by_pid(pid) -> bool:
+    logging.info(f'killing process {pid}')
+    try:
+        result = subprocess.run(['taskkill', '/F', '/PID', f'{pid}'], check=True, capture_output=True, text=True)
+        logging.debug(f'killing result:{result.stdout}')
+        return True
+    except subprocess.CalledProcessError as e:
+        logging.error(f'killing result:{e.stderr}')
+        return False
+
+
+def get_process_command_line(pid):
+    try:
+        process = psutil.Process(pid)
+        command_line = process.cmdline()
+        return command_line
+    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess) as e:
+        print(f"Error: {e}")
+        return None
+
+
+def get_process_start_location(pid):
+    try:
+        process = psutil.Process(pid)
+        start_location = process.exe()
+        return start_location
+    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess) as e:
+        print(f"Error: {e}")
+        return None
+
+
+def get_pids_by_process_name(process_name):
+    matching_pids = []
+    for process in psutil.process_iter(['pid', 'name']):
+        try:
+            process_info = process.info
+            if process_info['name'] == process_name:
+                matching_pids.append(process_info['pid'])
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            pass
+    return matching_pids
+
+
+def prase_MuMuVMMHeadless_commandline(headless_pid) -> dict:
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument('--comment')
+
+    parsed, unknown = parser.parse_known_args(get_process_command_line(headless_pid)[1:])
+    return {
+        "index": parsed.comment.split('-')[-1]
+    }
+
+
+def prase_MuMuPlayer_commandline(player_pid) -> dict:
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument('-v')
+
+    parsed, unknown = parser.parse_known_args(get_process_command_line(player_pid)[1:])
+    return {
+        "index": parsed.v if parsed.v else '0'
+    }
+
+
+def get_MuMuPlayer_by_MuMuVMMHeadless(headless_pid) -> int:
+    index = prase_MuMuVMMHeadless_commandline(headless_pid)['index']
+    player_pids = [p for p in get_pids_by_process_name('MuMuPlayer.exe') if prase_MuMuPlayer_commandline(p)['index'] == index]
+    if player_pids:
+        return player_pids[0]
+    else:
+        return None
 
 
 def get_game_time(server=''):
@@ -145,8 +245,10 @@ def get_game_week(server):
     '''
     return get_game_time(server).weekday() + 1
 
+
 def byte_to_MB(byte):
     return byte / (1024**2)
+
 
 def fix_log_file():
     log_file = var.cli_env / 'Log' / 'log.log'

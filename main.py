@@ -14,14 +14,14 @@ var.cli_env = pathlib.Path(__file__, '../')
 var.global_config = read_config('global')
 var.personal_configs = read_config('personal')
 var.default_personal_config = read_config('default_personal')
-var.asst_res_lib_env = pathlib.Path(var.global_config['maa_path'])
+var.maa_env = pathlib.Path(var.global_config['maa_path'])
 var.verbose = verbose
 
 fix_log_file()
 
 logging.basicConfig(level=logging.DEBUG,
-                    handlers=get_logging_handlers(logging.DEBUG, logging.DEBUG if var.verbose else logging.INFO),
-                    format='%(asctime)s[%(levelname)s] %(message)s')
+                    handlers=get_logging_handlers(),
+                    format='%(asctime)s[%(levelname)s][%(name)s] %(message)s')
 
 if __name__ == '__main__':
     logging.debug(f'started up at {var.cli_env}')
@@ -35,4 +35,4 @@ if __name__ == '__main__':
             run()
 
     except Exception as e:
-        logging.error(f"An expected error was occured when running: {e}", exc_info=True)
+        logging.error(f"An unexpected error was occured when running: {e}", exc_info=True)

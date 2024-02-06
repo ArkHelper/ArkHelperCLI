@@ -1,6 +1,6 @@
 import json
 from multiprocessing import Process
-from Libs.maa_util import asst_tostr, load_res_for_asst, update_nav
+from Libs.maa_util import update_nav
 from Libs.utils import exec_adb_cmd,kill_processes_by_name, random_choice_with_weights, read_config, read_json, read_yaml, arknights_checkpoint_opening_time, get_game_week, arknights_package_name, write_json
 import var
 from Libs.process_runner import start_process
@@ -41,9 +41,9 @@ def kill_all_emulators():
 
 def run():
     update_nav()
-    exec_adb_cmd('kill-server')
-    exec_adb_cmd('start-server')
-    kill_all_emulators()
+    #exec_adb_cmd('kill-server')
+    #exec_adb_cmd('start-server')
+    #kill_all_emulators()
 
     tasks = multiprocessing.Manager().list()
     result = multiprocessing.Manager().list()

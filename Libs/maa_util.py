@@ -11,23 +11,8 @@ import json
 from typing import Union, Optional
 
 
-def asst_tostr(emulator_address):
-    return f'asst instance({emulator_address})'
-
-
-def load_res_for_asst(asst: Asst, client_type: Optional[Union[str, None]] = None):
-    incr: pathlib.Path
-    if client_type in ['Official', 'Bilibili', None]:
-        incr = var.asst_res_lib_env / 'cache'
-    else:
-        incr = var.asst_res_lib_env / 'resource' / 'global' / str(client_type)
-
-    logging.debug(f'asst resource and lib loaded from incremental path {incr}')
-    asst.load_res(incr)
-
-
 def update_nav():
-    path = var.asst_res_lib_env
+    path = var.maa_env
 
     need_update = False
 

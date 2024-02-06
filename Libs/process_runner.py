@@ -1,22 +1,18 @@
-import queue
 from Libs.MAA.asst.asst import Asst
 from Libs.MAA.asst.utils import Message
 from Libs.MAA.asst.asst import Asst
-from Libs.maa_util import asst_tostr, load_res_for_asst, update_nav
-from Libs.utils import exec_adb_cmd, kill_processes_by_name, random_choice_with_weights, read_config, read_json, read_yaml, arknights_checkpoint_opening_time, get_game_week, arknights_package_name, write_json
+from Libs.utils import *
 import var
-
 
 import logging
 import os
 import time
 import json
-import copy
-import multiprocessing
-from multiprocessing import Process
-import subprocess
+from typing import Optional, Union
+import pathlib
 
-dev: 'Device' = None
+_dev: 'Device' = None
+_logger: logging.Logger = None
 
 
 @Asst.CallBackType
@@ -25,59 +21,87 @@ def asst_callback(msg, details, arg):
         m = Message(msg)
         d = json.loads(details.decode('utf-8'))
         # d = details.decode('utf-8')
-        dev.process_callback(m, d, arg)
+        _dev.process_callback(m, d, arg)
     except:
         pass
 
 
 def add_maatasks(asst: Asst, task):
     for maatask in task['task']:
-        add_maatask(maatask)
+        add_maatask(asst, maatask)
 
 
 def add_maatask(asst: Asst, maatask):
-    logging.debug(f'append task {maatask} to {asst}')
+    _logger.debug(f'Append task {maatask} to {asst}')
     asst.append_task(maatask['task_name'], maatask['task_config'])
+
+
+def load_res_for_asst(asst: Asst, client_type: Optional[Union[str, None]] = None):
+    incr: pathlib.Path
+    if client_type in ['Official', 'Bilibili', None]:
+        incr = var.maa_env / 'cache'
+    else:
+        incr = var.maa_env / 'resource' / 'global' / str(client_type)
+
+    _logger.debug(f'Start to load asst resource and lib from incremental path {incr}')
+    asst.load_res(incr)
+    _logger.debug(f'Asst resource and lib loaded from incremental path {incr}')
 
 
 class Device:
     def __init__(self, dev_config) -> None:
         self._adb_path = var.global_config['adb_path']
         self._start_path = dev_config['start_path']
-        self.emulator_addr = dev_config['emulator_address']
-        # self.running_task = None
+        _addr = dev_config['emulator_address'].split(':')
+        self._host = _addr[0]
+        self._port = _addr[-1]
         self.alias = dev_config['alias']
+        self._process_names = dev_config['process_name']
+        # self.running_task = None
         self._asst = None
         self._connected = False
-        self._str = f'device {self.alias}({self.emulator_addr})'
         self._current_server = None
         self._current_maatask_status: tuple[Message, dict, object] = (None, None, None)
+        self._logger = _logger.getChild(str(self))
 
     def __str__(self) -> str:
-        return self._str
+        return f'{self.alias}({self._addr})'
+    
+    @property
+    def _addr(self):
+        return f"{self._host}:{self._port}"
 
     def process_callback(self, msg: Message, details: dict, arg):
-        logging.debug(f'{self} got callback: {msg},{arg},{details}')
+        self._logger.debug(f'Got callback: {msg},{arg},{details}')
         if msg in [Message.TaskChainExtraInfo, Message.TaskChainCompleted, Message.TaskChainError, Message.TaskChainStopped, Message.TaskChainStart]:
             self._current_maatask_status = (msg, details, arg)
-            logging.debug(f'{self} _current_maatask_status turned to {self._current_maatask_status} according to callback.')
+            self._logger.debug(f'_current_maatask_status turned to {self._current_maatask_status} according to callback.')
 
     def exec_adb(self, cmd: str):
-        exec_adb_cmd(cmd, self.emulator_addr)
+        exec_adb_cmd(cmd, self._addr)
 
     def connect(self):
         _execedStart = False
         while True:
-            logging.debug(f'{self} try to connect emulator')
+            self._logger.debug(f'Try to connect emulator')
 
-            if self._asst.connect(self._adb_path, self.emulator_addr):
-                logging.info(f'{self} connected to emulator')
+            if self._asst.connect(self._adb_path, self._addr):
+                self._logger.info(f'Connected to emulator')
                 break
+            else:
+                self._logger.info(f'Connect failed')
 
             if not _execedStart and self._start_path is not None:
-                os.startfile(os.path.abspath(self._start_path))  # 程序结束后会自动关闭？！
+                emulator_pid = get_pid_by_port(self._addr.split(":")[-1])
+                kill_processes_by_pid(emulator_pid)
+                try:
+                    kill_processes_by_pid(get_MuMuPlayer_by_MuMuVMMHeadless(emulator_pid))
+                except:
+                    pass
+
+                os.startfile(os.path.abspath(self._start_path))
+                self._logger.info(f'Started emulator at {self._start_path}')
                 _execedStart = True
-                logging.info(f'{self} started emulator at {self._start_path}')
 
             time.sleep(2)
         self._connected = True
@@ -86,13 +110,13 @@ class Device:
         return self._asst.running()
 
     def run_task(self, task) -> dict:
-        logging.info(f'{self} start run task {task["hash"]}')
+        self._logger.info(f'Start run task {task["hash"]}')
 
         task_server = task['server']
         package_name = arknights_package_name[task_server]
         if self._current_server != task_server.replace('Bilibili', 'Official'):
             del self._asst
-            self._asst = Asst(var.asst_res_lib_env, var.asst_res_lib_env / f'userDir_{self.alias}', asst_callback)
+            self._asst = Asst(var.maa_env, var.maa_env / f'userDir_{self.alias}', asst_callback)
             load_res_for_asst(self._asst, task_server)
             self.connect()
 
@@ -112,12 +136,12 @@ class Device:
     def run_maatask(self, maatask, time_remain) -> dict:
         type = maatask['task_name']
         config = maatask['task_config']
-        logging.info(f'{self} start maatask {type}, time {time_remain} sec.')
+        self._logger.info(f'Start maatask {type}, time {time_remain} sec.')
 
         i = 0
         max_retry_time = 4
         for i in range(max_retry_time+1):
-            logging.info(f'{self} maatask {type} {i+1}st trying...')
+            self._logger.info(f'Maatask {type} {i+1}st trying...')
             add_maatask(self._asst, maatask)
             self._asst.start()
             asst_stop_invoked = False
@@ -149,7 +173,7 @@ class Device:
             if not time_ok:
                 reason = 'Timeout'
 
-        logging.info(f'{self} finished maatask {type} (succeed: {succeed}) beacuse of {reason}, remain {time_remain} sec.')
+        self._logger.info(f'Finished maatask {type} (succeed: {succeed}) beacuse of {reason}, remain {time_remain} sec.')
         return {
             "exec_result": {
                 "succeed": succeed,
@@ -167,30 +191,32 @@ def start_process(shared_status, static_process_detail):
         device_info = static_process_detail['device']
         process_pid = static_process_detail['pid']
         process_str = f"process{process_pid}"
-        global dev
-        dev = Device(device_info)
-        logging.info(f"{process_str} created which binds device {dev}.")
+        global _logger
+        _logger = logging.getLogger(process_str)
+        global _dev
+        _dev = Device(device_info)
+        _logger.info(f"Created which binds device {_dev}.")
 
         while True:
-            logging.debug(f'{process_str} start to distribute task to {dev}.')
+            _logger.debug(f'{process_str} start to distribute task to {_dev}.')
 
             distribute_task = (
-                [task for task in tasks if task.get('device') == dev.alias] or
+                [task for task in tasks if task.get('device') == _dev.alias] or
                 [task for task in tasks if task.get('device') is None] or
                 [None]
             )[0]
 
             if distribute_task:
                 try:
-                    logging.debug(f'Distribute task {distribute_task["hash"]} to {dev}')
+                    _logger.debug(f'Distribute task {distribute_task["hash"]} to {_dev}')
                     tasks.remove(distribute_task)
-                    dev.run_task(distribute_task)
+                    _dev.run_task(distribute_task)
                 except Exception as e:
                     # result.append()
                     pass
             else:
-                logging.info(f'{dev} finished all tasks.')
-                logging.debug(f'{process_str} will exit.')
+                _logger.info(f'{_dev} finished all tasks.')
+                _logger.debug(f'{process_str} will exit.')
                 break
     except Exception as e:
-        logging.error(f"An expected error was occured in {process_str} when running: {str(e)}", exc_info=True)
+        _logger.error(f"An unexpected error was occured in {process_str} when running: {str(e)}", exc_info=True)
