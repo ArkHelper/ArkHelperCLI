@@ -69,7 +69,6 @@ def run():
 def extend_full_tasks(config):
     final_tasks: list = []
     overrides = config['override']
-    black_task_names = config.get('blacklist', [])
     server = ''
     for default_task in var.default_personal_config:
         default_task: dict
@@ -83,59 +82,48 @@ def extend_full_tasks(config):
                 [{}]
             )[0]
 
-        if final_task_name not in black_task_names:
-            def update():
-                final_task_config.update(preference_task_config)
+        def update():
+            final_task_config.update(preference_task_config)
 
-            def append():
+        def append():
+            if final_task_config.get('enable',True):
                 final_tasks.append({
                     'task_name': final_task_name,
                     'task_config': final_task_config
                 })
 
-            # MAA的一个bug，有概率切换账号后无法登录，所以再加个登录Task
-            # FIXME:(好像修好了)
-            if final_task_name == 'StartUp':
-                update()
-                append()
+        if final_task_name == 'StartUp':
+            update()
+            append()
 
-                server = final_task_config.get('client_type', 'Official')
+            server = final_task_config.get('client_type', 'Official')
+        elif final_task_name == 'Fight':
+            preference_checkpoint = preference_task_config.get('stage')
 
-                if final_task_config.get('account_name', '') != '' and False:
-                    another_startup_task_config = copy.deepcopy(
-                        final_task_config)
-                    another_startup_task_config['account_name'] = ''
-                    final_tasks.append({
-                        'task_name': final_task_name,
-                        'task_config': another_startup_task_config
-                    })
-            elif final_task_name == 'Fight':
-                preference_checkpoint = preference_task_config.get('stage')
+            if preference_checkpoint and type(preference_checkpoint) is dict:
+                checkpoints_in_limit_list = [cp for cp in preference_checkpoint if cp.rsplit('-', 1)[0] in arknights_checkpoint_opening_time]
+                checkpoints_outof_limit_list = [cp for cp in preference_checkpoint if not cp.rsplit('-', 1)[0] in arknights_checkpoint_opening_time]
 
-                if preference_checkpoint and type(preference_checkpoint) is dict:
-                    checkpoints_in_limit_list = [cp for cp in preference_checkpoint if cp.rsplit('-', 1)[0] in arknights_checkpoint_opening_time]
-                    checkpoints_outof_limit_list = [cp for cp in preference_checkpoint if not cp.rsplit('-', 1)[0] in arknights_checkpoint_opening_time]
+                for checkpoint in checkpoints_in_limit_list:
+                    opening_time = arknights_checkpoint_opening_time[checkpoint.rsplit('-', 1)[0]]
 
-                    for checkpoint in checkpoints_in_limit_list:
-                        opening_time = arknights_checkpoint_opening_time[checkpoint.rsplit('-', 1)[0]]
+                    if get_game_week(server) not in opening_time:
+                        preference_checkpoint.pop(checkpoint)
+                        continue
 
-                        if get_game_week(server) not in opening_time:
-                            preference_checkpoint.pop(checkpoint)
-                            continue
+                    rate_standard_coefficient = len(opening_time)
+                    preference_checkpoint[checkpoint] /= rate_standard_coefficient  # 平衡概率
 
-                        rate_standard_coefficient = len(opening_time)
-                        preference_checkpoint[checkpoint] /= rate_standard_coefficient  # 平衡概率
+                for checkpoint in checkpoints_outof_limit_list:
+                    preference_checkpoint[checkpoint] /= 7  # 平衡概率
 
-                    for checkpoint in checkpoints_outof_limit_list:
-                        preference_checkpoint[checkpoint] /= 7  # 平衡概率
+                preference_task_config['stage'] = random_choice_with_weights(preference_checkpoint)
 
-                    preference_task_config['stage'] = random_choice_with_weights(preference_checkpoint)
-
-                update()
-                append()
-            else:
-                update()
-                append()
+            update()
+            append()
+        else:
+            update()
+            append()
 
     task = {
         'task': final_tasks,

@@ -8,9 +8,7 @@
         stage: "" # The stage field accepts a string or a list. If it is a string, the specified content will be passed directly into MAA.
     - task_name: Infrast
       task_config:
-        drones: PureGold
-  blacklist: # Add the task specified by the template to the blacklist and will not run it
-    - Recruit
+        enable: false # Override field enable to false to disable this task
 - device: mumu1 # A device specified in the global config can be specified to run
   override:
     - task_name: StartUp
