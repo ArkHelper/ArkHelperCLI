@@ -1,18 +1,22 @@
-import json
-from multiprocessing import Process
-from Libs.maa_util import update_nav
-from Libs.utils import exec_adb_cmd,kill_processes_by_name, random_choice_with_weights, read_config, read_json, read_yaml, arknights_checkpoint_opening_time, get_game_week, arknights_package_name, write_json
 import var
-from Libs.process_runner import start_process
+from Libs.utils import *
+from Libs.process_runner import start_task_process
+from Libs.maa_util import update_nav
+from Libs.MAA.asst.asst import Asst
+from Libs.MAA.asst.utils import Message
+from Libs.model import Device
+
 
 import logging
 import os
 import time
 import copy
 import multiprocessing
+import json
 
-#TODO: using task running result
+
 def do_conclusion():
+    # TODO: using task running result
     file_name = r'%y-%m-%d-%H-%M-%S.json'
     file_name = var.start_time.strftime(file_name)
 
@@ -41,33 +45,70 @@ def kill_all_emulators():
 
 def run():
     update_nav()
-    #exec_adb_cmd('kill-server')
-    #exec_adb_cmd('start-server')
-    #kill_all_emulators()
+    # exec_adb_cmd('kill-server')
+    # exec_adb_cmd('start-server')
+    # kill_all_emulators()
 
-    tasks = multiprocessing.Manager().list()
-    result = multiprocessing.Manager().list()
-    shared_status = multiprocessing.Manager().dict()
-    shared_status['tasks'] = tasks
-    shared_status['result'] = result
-    for personal_config in var.personal_configs:
-        tasks.append(extend_full_tasks(personal_config))
+    tasks = [get_full_task(personal_config) for personal_config in var.personal_configs]
+    devices = [Device(dev_config) for dev_config in var.global_config['devices']]
+    task_statuses: list[list[Device, multiprocessing.Process, dict, dict]] = [[_device, None, None, None] for _device in devices]
 
-    processes: list[Process] = []
-    for index, dev in enumerate(var.global_config['devices']):
-        process = multiprocessing.Process(target=start_process, args=(shared_status, {'device': dev, 'pid': index}))
-        process.start()
-        processes.append(process)
+    while True:
+        ended_dev = []
+        for task_status in task_statuses:
+            logger = task_status[0].logger
 
-    while any([p.is_alive() for p in processes]):
-        time.sleep(2)
+            if task_status[1] != None:
+                if not task_status[1].is_alive():
+                    logger.debug(f'TaskProcess {task_status[2]["task"]["hash"]} ended, clearing.')
+                    task_status[1] = None
+                    task_status[2] = None
+                    task_status[3] = None
+
+            if task_status[1] == None:
+                logger.debug(f'Process is None, distributing task.')
+                def no_task():
+                    logger.debug(f'No task to distribute. Ended.')
+                    ended_dev.append(task_status[0])
+                if tasks:
+                    distribute_task = (
+                        [task for task in tasks if task.get('device') == task_status[0].alias] or
+                        [task for task in tasks if task.get('device') is None] or
+                        [None]
+                    )[0]
+
+                    if distribute_task:
+                        tasks.remove(distribute_task)
+                        process_static_params = {
+                            "task": distribute_task,
+                            "device": task_status[0]
+                        }
+                        process_shared_status = multiprocessing.Manager().dict()
+                        process = multiprocessing.Process(target=start_task_process, args=(process_static_params, process_shared_status, ))
+
+                        task_status[1] = process
+                        task_status[2] = process_static_params
+                        task_status[3] = process_shared_status
+
+                        logger.debug(f'Ready to start a task process(task={distribute_task["hash"]}).')
+                        process.start()
+                    else:
+                        no_task()
+                else:
+                    no_task()
+
+        if len(ended_dev) == len(devices):
+            logger.debug(f'All devices ended. Exiting.')
+            break
+        else:
+            time.sleep(2)
 
     kill_all_emulators()
     do_conclusion()
 
 
-def extend_full_tasks(config):
-    final_tasks: list = []
+def get_full_task(config):
+    final_maatasks: list = []
     overrides = config['override']
     server = ''
     for default_task in var.default_personal_config:
@@ -86,8 +127,8 @@ def extend_full_tasks(config):
             final_task_config.update(preference_task_config)
 
         def append():
-            if final_task_config.get('enable',True):
-                final_tasks.append({
+            if final_task_config.get('enable', True):
+                final_maatasks.append({
                     'task_name': final_task_name,
                     'task_config': final_task_config
                 })
@@ -126,11 +167,11 @@ def extend_full_tasks(config):
             append()
 
     task = {
-        'task': final_tasks,
+        'task': final_maatasks,
         'device': config.get('device', None),
         'server': server
     }
-    task_hash = hash(json.dumps(task, ensure_ascii=False))
+    task_hash = generate_hash(json.dumps(task, ensure_ascii=False))
     logging.debug(f'Generated hash {task_hash} for task: {task}')
     task['hash'] = task_hash
     return task

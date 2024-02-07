@@ -1,3 +1,4 @@
+import hashlib
 import json
 from multiprocessing.spawn import get_command_line
 import pathlib
@@ -295,3 +296,12 @@ def random_choice_with_weights(dict):
         weights.append(dict[i])
 
     return random.choices(items, weights)[0]
+
+def generate_hash(input_string):
+    # 使用SHA-256哈希函数
+    hash_object = hashlib.sha256(input_string.encode())
+    # 获取十六进制表示的哈希值
+    hex_dig = hash_object.hexdigest()
+    # 截取前六位作为哈希
+    six_digit_hash = hex_dig[:6]
+    return six_digit_hash
