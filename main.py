@@ -24,9 +24,9 @@ logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s[%(levelname)s][%(name)s] %(message)s')
 
 if __name__ == '__main__':
-    logging.debug(f'started up at {var.cli_env}')
-    logging.debug(f'with global config {var.global_config}')
-    logging.debug(f'with personal config {var.personal_configs}')
+    logging.debug(f'Started up at {var.cli_env}.')
+    logging.debug(f'With global config {var.global_config}.')
+    logging.debug(f'With personal config {var.personal_configs}.')
     
     try:
         if mode == 'test':

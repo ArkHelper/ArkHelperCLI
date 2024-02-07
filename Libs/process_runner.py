@@ -34,10 +34,10 @@ def asst_callback(msg, details, arg):
 
 
 def process_callback(msg: Message, details: dict, arg):
-    logger.debug(f'Got callback: {msg},{arg},{details}')
+    logger.debug(f'Got callback: {msg},{arg},{details}.')
     if msg in [Message.TaskChainExtraInfo, Message.TaskChainCompleted, Message.TaskChainError, Message.TaskChainStopped, Message.TaskChainStart]:
         current_maatask_status = (msg, details, arg)
-        logger.debug(f'_current_maatask_status turned to {current_maatask_status} according to callback.')
+        logger.debug(f'current_maatask_status turned to {current_maatask_status} according to callback.')
 
 
 def add_maatasks(asst: Asst, task):
@@ -46,7 +46,7 @@ def add_maatasks(asst: Asst, task):
 
 
 def add_maatask(asst: Asst, maatask):
-    logger.debug(f'Append task {maatask} to {asst}')
+    logger.debug(f'Append task {maatask} to {asst}.')
     asst.append_task(maatask['task_name'], maatask['task_config'])
 
 
@@ -57,21 +57,21 @@ def load_res_for_asst(asst: Asst, client_type: Optional[Union[str, None]] = None
     else:
         incr = var.maa_env / 'resource' / 'global' / str(client_type)
 
-    logger.debug(f'Start to load asst resource and lib from incremental path {incr}')
+    logger.debug(f'Start to load asst resource and lib from incremental path {incr}.')
     asst.load_res(incr)
-    logger.debug(f'Asst resource and lib loaded from incremental path {incr}')
+    logger.debug(f'Asst resource and lib loaded from incremental path {incr}.')
 
 
 def connect():
     _execed_start = False
     while True:
-        logger.debug(f'Try to connect emulator')
+        logger.debug(f'Try to connect emulator...')
 
         if asst.connect(dev._adb, dev._addr):
-            logger.info(f'Connected to emulator')
+            logger.info(f'Connected to emulator.')
             break
         else:
-            logger.info(f'Connect failed')
+            logger.info(f'Connect failed.')
 
         if not _execed_start:
             dev.kill_start()
@@ -92,15 +92,20 @@ def run_maatask(maatask, time_remain) -> dict:
         logger.info(f'Maatask {type} {i+1}st trying...')
         add_maatask(asst, maatask)
         asst.start()
+        logger.debug("Asst start invoked.")
         asst_stop_invoked = False
         interval = 5
         while asst.running():
             time.sleep(interval)
             time_remain -= interval
             if time_remain < 0:
+                logger.warning(f"Task time remains {time_remain}.")
                 if not asst_stop_invoked and type != "Fight":
                     asst.stop()
+                    logger.debug(f"Asst stop invoked.")
                     asst_stop_invoked = True
+        logger.debug(f"Asst running status ended.")
+        logger.debug(f"current_maatask_status={current_maatask_status}.")
         if current_maatask_status[0] == Message.TaskChainError:
             continue
         elif current_maatask_status[0] == Message.TaskChainStopped:
@@ -108,6 +113,7 @@ def run_maatask(maatask, time_remain) -> dict:
         else:
             break
 
+    logger.debug(f"Maatask {type} ended.")
     status_message = current_maatask_status[0]
     status_ok = status_message == Message.TaskChainCompleted
     time_ok = time_remain >= 0
@@ -121,6 +127,7 @@ def run_maatask(maatask, time_remain) -> dict:
         if not time_ok:
             reason = 'Timeout'
 
+    logger.debug(f"Status={status_message}, time_remain={time_remain}")
     logger.info(f'Finished maatask {type} (succeed: {succeed}) beacuse of {reason}, remain {time_remain} sec.')
     return {
         "exec_result": {

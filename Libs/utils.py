@@ -54,7 +54,7 @@ def exec_adb_cmd(cmd, device=None):
             adb_command.extend(['-s', device])
         adb_command.extend(cmd_ls)
 
-        logging.debug(f'execing adb cmd: {" ".join(adb_command)}')
+        logging.debug(f'Execing adb cmd: {" ".join(adb_command)}.')
         result = subprocess.run(adb_command, capture_output=True, text=True, check=True, encoding='utf-8')
         logging.debug(f'adb output: {result.stdout}')
     except subprocess.CalledProcessError as e:
@@ -160,10 +160,10 @@ def kill_processes_by_pid(pid) -> bool:
     logging.info(f'killing process {pid}')
     try:
         result = subprocess.run(['taskkill', '/F', '/PID', f'{pid}'], check=True, capture_output=True, text=True)
-        logging.debug(f'killing result:{result.stdout}')
+        logging.debug(f'Killing result:{result.stdout}.')
         return True
     except subprocess.CalledProcessError as e:
-        logging.error(f'killing result:{e.stderr}')
+        logging.error(f'Killing result:{e.stderr}.')
         return False
 
 

@@ -172,6 +172,6 @@ def get_full_task(config):
         'server': server
     }
     task_hash = generate_hash(json.dumps(task, ensure_ascii=False))
-    logging.debug(f'Generated hash {task_hash} for task: {task}')
+    logging.debug(f'Generated hash {task_hash} for task: {task}.')
     task['hash'] = task_hash
     return task
