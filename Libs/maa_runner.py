@@ -98,7 +98,7 @@ def run():
                     no_task()
 
         if len(ended_dev) == len(devices):
-            logger.debug(f'All devices ended. Exiting.')
+            logging.debug(f'All devices ended. Exiting.')
             break
         else:
             time.sleep(2)
