@@ -1,7 +1,7 @@
 adb_path: C:\App\platform-tools\adb.exe # both absolute and relative is ok for a path
 maa_path: C:\App\MAA
 devices:
-  - alias: mumu # alias of device. Follows the regex: ^[^<>:"/\\|?*]+$
+  - alias: mumu # alias of device
     emulator_address: 127.0.0.1:16384
     start_path: C:\mumu.lnk
     process_name:

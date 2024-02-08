@@ -1,23 +1,24 @@
 import hashlib
 import json
-from multiprocessing.spawn import get_command_line
-import pathlib
 import logging
 import random
-from tabnanny import verbose
 import psutil
 import argparse
-import threading
 import subprocess
-import os
 import yaml
-
 import pytz
-
-import var
-from jsonschema import validate
 from datetime import datetime
 from datetime import timedelta
+
+import var
+
+
+def convert_the_file_name_to_a_legal_file_name_under_windows(filename):
+    end = ""
+    for char in filename:
+        if not char in ['\\', '/', ':', '*', '?', '"', '<', '>', '|']:
+            end += char
+    return end
 
 
 def is_process_running(process_name):
@@ -251,7 +252,7 @@ def byte_to_MB(byte):
     return byte / (1024**2)
 
 
-def fix_log_file():
+def adjust_log_file():
     log_file = var.cli_env / 'Log' / 'log.log'
     log_backup_file = var.cli_env / 'Log' / 'log.log.bak'
     if log_file.exists():
@@ -296,6 +297,7 @@ def random_choice_with_weights(dict):
         weights.append(dict[i])
 
     return random.choices(items, weights)[0]
+
 
 def generate_hash(input_string):
     # 使用SHA-256哈希函数

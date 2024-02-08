@@ -1,18 +1,13 @@
 import var
 from Libs.utils import *
-from Libs.process_runner import start_task_process
-from Libs.maa_util import update_nav
-from Libs.MAA.asst.asst import Asst
-from Libs.MAA.asst.utils import Message
 from Libs.model import Device
+from Libs.process_runner import start_task_process
 
 
 import logging
-import os
 import time
 import copy
 import multiprocessing
-import json
 
 
 def do_conclusion():
@@ -44,12 +39,12 @@ def kill_all_emulators():
 
 
 def run():
-    update_nav()
+    # TODO:update_nav()
     # exec_adb_cmd('kill-server')
     # exec_adb_cmd('start-server')
     # kill_all_emulators()
 
-    tasks = [get_full_task(personal_config) for personal_config in var.personal_configs]
+    [var.tasks.append(get_full_task(personal_config)) for personal_config in var.personal_configs]
     devices = [Device(dev_config) for dev_config in var.global_config['devices']]
     task_statuses: list[list[Device, multiprocessing.Process, dict, dict]] = [[_device, None, None, None] for _device in devices]
 
@@ -67,18 +62,19 @@ def run():
 
             if task_status[1] == None:
                 logger.debug(f'Process is None, distributing task.')
+
                 def no_task():
                     logger.debug(f'No task to distribute. Ended.')
                     ended_dev.append(task_status[0])
-                if tasks:
+                if var.tasks:
                     distribute_task = (
-                        [task for task in tasks if task.get('device') == task_status[0].alias] or
-                        [task for task in tasks if task.get('device') is None] or
+                        [task for task in var.tasks if task.get('device') == task_status[0].alias] or
+                        [task for task in var.tasks if task.get('device') is None] or
                         [None]
                     )[0]
 
                     if distribute_task:
-                        tasks.remove(distribute_task)
+                        var.tasks.remove(distribute_task)
                         process_static_params = {
                             "task": distribute_task,
                             "device": task_status[0]
@@ -111,6 +107,7 @@ def get_full_task(config):
     final_maatasks: list = []
     overrides = config['override']
     server = ''
+    account_name = ''
     for default_task in var.default_personal_config:
         default_task: dict
 
@@ -138,6 +135,7 @@ def get_full_task(config):
             append()
 
             server = final_task_config.get('client_type', 'Official')
+            account_name = final_task_config.get('account_name', '')
         elif final_task_name == 'Fight':
             preference_checkpoint = preference_task_config.get('stage')
 
@@ -166,12 +164,16 @@ def get_full_task(config):
             update()
             append()
 
+    hash = f'{server}_{account_name}'
+    if (index:=len([t for t in var.tasks if t['hash'] == hash])) != 0:
+        hash += f"_{index}"
+
     task = {
+        'hash': hash,
         'task': final_maatasks,
         'device': config.get('device', None),
-        'server': server
+        'server': server,
+        'account_name': account_name
     }
-    task_hash = generate_hash(json.dumps(task, ensure_ascii=False))
-    logging.debug(f'Generated hash {task_hash} for task: {task}.')
-    task['hash'] = task_hash
+    logging.debug(f'Initialization ended for task {hash}.')
     return task

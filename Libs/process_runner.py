@@ -1,4 +1,3 @@
-from numpy import true_divide
 from Libs.MAA.asst.asst import Asst
 from Libs.MAA.asst.utils import Message
 from Libs.MAA.asst.asst import Asst
@@ -154,7 +153,7 @@ def start_task_process(process_static_params, process_shared_status):
     try:
         userdir: pathlib.Path = var.maa_env / f'userdir' / task_str
         userdir.parent.mkdir(exist_ok=True)
-        asst = Asst(var.maa_env, var.maa_env / f'userdir' / task_str, asst_callback)
+        asst = Asst(var.maa_env, var.maa_env / f'userdir' / convert_the_file_name_to_a_legal_file_name_under_windows(task_str), asst_callback)
         load_res_for_asst(asst, task_server)
         connect()
 

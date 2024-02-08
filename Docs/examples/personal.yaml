@@ -1,3 +1,4 @@
+# A task will choose f"{client_type}_{account_name}" as its unique identifier. If a repetition occurs, add an index at the end (starts at 1).
 - override: # Override fields in common task configuration templates
     - task_name: StartUp
       task_config:
@@ -8,7 +9,7 @@
         stage: "" # The stage field accepts a string or a list. If it is a string, the specified content will be passed directly into MAA.
     - task_name: Infrast
       task_config:
-        enable: false # Override field enable to false to disable this task
+        enable: false # Override this field to false to disable this task (this task won't be added to <MAA Asst>)
 - device: mumu1 # A device specified in the global config can be specified to run
   override:
     - task_name: StartUp
@@ -16,9 +17,9 @@
         client_type: YoStarEN
     - task_name: Fight
       task_config:
-        stage: 
-          # If it is a list that assigns weights to specified levels, the CLI will automatically parse the weights and randomly assign levels according to them. The weights are real numbers (R).
-          # Weight automatic balancing rules: 
+        stage:
+          # If it is a list that assigns weights to specified levels, CLI will automatically parse the weights and randomly assign levels according to them. The weights are real numbers (R).
+          # Weight automatic balancing rules:
           #   1. (corresponding level weight)/(corresponding level open days per week) = (actual weight).
           LS-6: 5
           CE-6: 5

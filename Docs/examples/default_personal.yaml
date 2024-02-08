@@ -1,10 +1,10 @@
-# For rules, please refer to https://maa.plus/docs/%E5%8D%8F%E8%AE%AE%E6%96%87%E6%A1%A3/%E9%9B%86%E6%88%90%E6%96%87%E6%A1%A3.html
+# For rules for task config, please refer to https://maa.plus/docs/%E5%8D%8F%E8%AE%AE%E6%96%87%E6%A1%A3/%E9%9B%86%E6%88%90%E6%96%87%E6%A1%A3.html
 - task_name: StartUp
   task_config:
     enable: true
-    client_type: Official # This field must be existed
+    client_type: Official # This field must be existed in default personal config
     start_game_enabled: true
-    account_name: "" # This field must be existed
+    account_name: "" # This field must be existed in default personal config although it is ""
 - task_name: Fight
   task_config:
     enable: true
