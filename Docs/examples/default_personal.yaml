@@ -2,9 +2,9 @@
 - task_name: StartUp
   task_config:
     enable: true
-    client_type: Official # This field must be existed in default personal config
+    client_type: Official
     start_game_enabled: true
-    account_name: "" # This field must be existed in default personal config although it is ""
+    account_name: ""
 - task_name: Fight
   task_config:
     enable: true

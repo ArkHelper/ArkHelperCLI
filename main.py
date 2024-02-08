@@ -1,12 +1,7 @@
-from datetime import datetime
-from line_profiler import LineProfiler
-import pathlib
-import logging
-
 import var
-from Libs.utils import adjust_log_file, read_config, get_logging_handlers, parse_arg
-from Libs.maa_runner import run
+from Libs.utils import *
 from Libs.test import test
+from Libs.maa_runner import run
 
 mode, verbose = parse_arg()
 
