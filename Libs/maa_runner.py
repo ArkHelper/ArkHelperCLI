@@ -2,6 +2,7 @@ import var
 from Libs.utils import *
 from Libs.model import Device
 from Libs.process_runner import start_task_process
+from Libs.maa_util import update_nav
 
 
 import logging
@@ -39,7 +40,7 @@ def kill_all_emulators():
 
 
 def run():
-    # TODO:update_nav()
+    update_nav()
     # exec_adb_cmd('kill-server')
     # exec_adb_cmd('start-server')
     # kill_all_emulators()
@@ -86,7 +87,7 @@ def run():
                         task_status[2] = process_static_params
                         task_status[3] = process_shared_status
 
-                        logger.debug(f'Ready to start a task process(task={distribute_task["hash"]}).')
+                        logger.info(f'Ready to start a task process(task={distribute_task["hash"]}).')
                         process.start()
                     else:
                         no_task()
@@ -139,7 +140,7 @@ def get_full_task(config):
         elif final_task_name == 'Fight':
             preference_checkpoint = preference_task_config.get('stage')
 
-            if preference_checkpoint and type(preference_checkpoint) is dict:
+            if preference_checkpoint and type(preference_checkpoint) == dict:
                 checkpoints_in_limit_list = [cp for cp in preference_checkpoint if cp.rsplit('-', 1)[0] in arknights_checkpoint_opening_time]
                 checkpoints_outof_limit_list = [cp for cp in preference_checkpoint if not cp.rsplit('-', 1)[0] in arknights_checkpoint_opening_time]
 
@@ -164,7 +165,7 @@ def get_full_task(config):
             update()
             append()
 
-    hash = f'{server}_{account_name}'
+    hash = f'{server}{account_name}'
     if (index:=len([t for t in var.tasks if t['hash'] == hash])) != 0:
         hash += f"_{index}"
 

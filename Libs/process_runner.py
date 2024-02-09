@@ -33,6 +33,7 @@ def asst_callback(msg, details, arg):
 
 
 def process_callback(msg: Message, details: dict, arg):
+    global dev, logger, asst, task, process_str, task_str, current_maatask_status
     logger.debug(f'Got callback: {msg},{arg},{details}.')
     if msg in [Message.TaskChainExtraInfo, Message.TaskChainCompleted, Message.TaskChainError, Message.TaskChainStopped, Message.TaskChainStart]:
         current_maatask_status = (msg, details, arg)
@@ -62,6 +63,7 @@ def load_res_for_asst(asst: Asst, client_type: Optional[Union[str, None]] = None
 
 
 def connect():
+    global dev, logger, asst, task, process_str, task_str, current_maatask_status
     _execed_start = False
     while True:
         logger.debug(f'Try to connect emulator...')
@@ -81,6 +83,7 @@ def connect():
 
 
 def run_maatask(maatask, time_remain) -> dict:
+    global dev, logger, asst, task, process_str, task_str, current_maatask_status
     type = maatask['task_name']
     config = maatask['task_config']
     logger.info(f'Start maatask {type}, time {time_remain} sec.')
@@ -88,7 +91,7 @@ def run_maatask(maatask, time_remain) -> dict:
     i = 0
     max_retry_time = 4
     for i in range(max_retry_time+1):
-        logger.info(f'Maatask {type} {i+1}st trying...')
+        logger.info(f'Maatask {type} {i+1}st/{max_retry_time} trying...')
         add_maatask(asst, maatask)
         asst.start()
         logger.debug("Asst start invoked.")
@@ -98,8 +101,8 @@ def run_maatask(maatask, time_remain) -> dict:
             time.sleep(interval)
             time_remain -= interval
             if time_remain < 0:
-                logger.warning(f"Task time remains {time_remain}.")
                 if not asst_stop_invoked and type != "Fight":
+                    logger.warning(f"Task time remains {time_remain}.")
                     asst.stop()
                     logger.debug(f"Asst stop invoked.")
                     asst_stop_invoked = True
@@ -147,7 +150,7 @@ def start_task_process(process_static_params, process_shared_status):
     package_name = arknights_package_name[task_server]
     process_str = f"taskprocess({task_str})"
     logger = dev.logger.getChild(process_str)
-    logger.debug("Created.")
+    logger.info("Created.")
     logger.info("Ready to execute task.")
 
     try:
@@ -168,7 +171,7 @@ def start_task_process(process_static_params, process_shared_status):
                 run_result = run_maatask(maatask, remain_time)
                 remain_time = run_result['time_remain']
 
-        dev.exec_adb(f'shell screencap -p /sdcard/DCIM/AkhCLI_{int(time.time())}.png')
+        dev.exec_adb(f'shell screencap -p /sdcard/DCIM/AkhCLI_{task_str}_{int(time.time())}.png')
 
         del asst
         logger.debug('Ready to exit.')

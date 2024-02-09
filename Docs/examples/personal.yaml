@@ -1,4 +1,4 @@
-# A task will choose f"{client_type}_{account_name}" as its unique identifier. If a repetition occurs, add an index at the end (starts at 1).
+# A task will choose f"{client_type}{account_name}" as its unique identifier. If a repetition occurs, add an index at the end (starts at 1).
 - override: # Override fields in common task configuration templates
     - task_name: StartUp
       task_config:

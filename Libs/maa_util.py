@@ -1,14 +1,9 @@
 import requests
-from Libs.MAA.asst.asst import Asst
-from Libs.MAA.asst.utils import Message, Version, InstanceOptionType
-from Libs.utils import read_json, read_yaml, write_json, read_file, write_file
+from Libs.utils import *
 import var
 
-import pathlib
-import os
 import logging
 import json
-from typing import Union, Optional
 
 
 def update_nav():
