@@ -8,8 +8,7 @@ import subprocess
 import yaml
 import pytz
 import pathlib
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timezone, timedelta
 from line_profiler import LineProfiler
 
 import var
@@ -231,7 +230,7 @@ def get_MuMuPlayer_by_MuMuVMMHeadless(headless_pid) -> int:
         return None
 
 
-def get_game_time(server=''):
+def in_game_time(time, server='Official'):
     zone = pytz.timezone('GMT')
     if server in ('Official', 'Bilibili', 'txwy'):
         zone = pytz.timezone('Asia/Shanghai')
@@ -239,15 +238,17 @@ def get_game_time(server=''):
     elif server in ('YoStarJP', 'YoStarKR'):
         zone = pytz.timezone('Asia/Tokyo')
         # zone = pytz.timezone('Asia/Seoul')
-    return (datetime.utcnow()-timedelta(hours=4)).replace(tzinfo=pytz.utc).astimezone(zone)
+    elif server == '':
+        zone = pytz.timezone('Asia/Shanghai')
+    return (time.astimezone(timezone.utc)-timedelta(hours=4)).replace(tzinfo=pytz.utc).astimezone(zone)
 
 
-def get_game_week(server):
+def in_game_week(time, server):
     '''
     Get weekday in the game.
     Returns an Int in 1~7, which means 周一二三四五六日 in Chinese.
     '''
-    return get_game_time(server).weekday() + 1
+    return in_game_time(time, server).weekday() + 1
 
 
 def byte_to_MB(byte):
@@ -264,8 +265,8 @@ def adjust_log_file():
             log_file.rename(log_backup_file)
 
 
-# checkpoint_opening_time, 1~7 means 周一二三四五六日 in Chinese.
-arknights_checkpoint_opening_time = {
+# stage_opening_time, 1~7 means 周一二三四五六日 in Chinese.
+arknights_stage_opening_time = {
     'SK': [1, 3, 5, 6],
     'AP': [1, 4, 6, 7],
     'CA': [2, 3, 5, 7],

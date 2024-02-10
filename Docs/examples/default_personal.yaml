@@ -62,6 +62,10 @@
     server: CN
 - task_name: Mall
   task_config:
+    enable: 
+      - condition: AM
+        config: true
+      - config: false
     credit_fight: false
     shopping: true
     buy_first:

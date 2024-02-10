@@ -90,6 +90,7 @@ def run_maatask(maatask, time_remain) -> dict:
 
     i = 0
     max_retry_time = 4
+    if type == 'Award': max_retry_time = 1 #FIXME: maa bug，找不到抽卡会报错，因此忽略
     for i in range(max_retry_time+1):
         logger.info(f'Maatask {type} {i+1}st/{max_retry_time} trying...')
         add_maatask(asst, maatask)
