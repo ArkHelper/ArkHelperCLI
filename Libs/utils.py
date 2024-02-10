@@ -7,11 +7,17 @@ import argparse
 import subprocess
 import yaml
 import pytz
-import pathlib
+from pathlib import Path
 from datetime import datetime, timezone, timedelta
-from line_profiler import LineProfiler
 
 import var
+
+
+def mk_CLI_dir():
+    var.data_path.mkdir(exist_ok=True)
+    var.config_path.mkdir(exist_ok=True)
+    var.log_path.mkdir(exist_ok=True)
+    var.static_path.mkdir(exist_ok=True)
 
 
 def convert_the_file_name_to_a_legal_file_name_under_windows(filename):
@@ -126,13 +132,13 @@ def write_yaml(path, content):
 
 
 def read_config(config_name):
-    data = read_yaml(var.cli_env / 'Config' / f'{config_name}.yaml')
+    data = read_yaml(var.config_path / f'{config_name}.yaml')
     return data
 
 
 def get_logging_handlers():
     file_level, console_level = logging.DEBUG, logging.DEBUG if var.verbose else logging.INFO
-    log_file = var.cli_env / 'Log' / 'log.log'
+    log_file = var.log_path / 'log.log'
 
     if not log_file.exists():
         log_file.parent.mkdir(exist_ok=True)
@@ -256,8 +262,8 @@ def byte_to_MB(byte):
 
 
 def adjust_log_file():
-    log_file = var.cli_env / 'Log' / 'log.log'
-    log_backup_file = var.cli_env / 'Log' / 'log.log.bak'
+    log_file = var.log_path / 'log.log'
+    log_backup_file = var.log_path / 'log.log.bak'
     if log_file.exists():
         if byte_to_MB(log_file.stat().st_size) > 100:
             if log_backup_file.exists():

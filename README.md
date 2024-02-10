@@ -4,8 +4,8 @@
 ## deploy/dev
 1. ``` git clone https://github.com/ArkHelper/ArkHelperCLI ```  
 1. ``` cd ArkHelperCLI ``` 
-1. Create folder ``` ArkHelperCLI/Config ``` 
-1. Make configs (details below)
+1. Create folder ``` Data/Config ``` 
+1. Create configs (details below)
 1. Install requirements via pip
 1. ``` python main.py ```
 

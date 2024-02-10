@@ -6,12 +6,19 @@ from Libs.maa_runner import run
 mode, verbose = parse_arg()
 
 var.start_time = datetime.now()
-var.cli_env = pathlib.Path(__file__, '../')
+var.cli_env = Path(__file__, '../')
+var.data_path = var.cli_env / 'Data'
+var.config_path = var.data_path / 'Config'
+var.log_path = var.data_path / 'Log'
+var.static_path = var.data_path / 'Static'
+
+mk_CLI_dir()
+
 var.global_config = read_config('global')
 var.personal_configs = read_config('personal')
 var.default_personal_config = read_config('default_personal')
 var.tasks = []
-var.maa_env = pathlib.Path(var.global_config['maa_path'])
+var.maa_env = Path(var.global_config['maa_path'])
 var.verbose = verbose
 
 adjust_log_file()

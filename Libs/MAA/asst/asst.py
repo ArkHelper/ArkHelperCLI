@@ -84,8 +84,7 @@ class Asst:
             ``callback``:   回调函数
             ``arg``:        自定义参数
         '''
-        if not user_dir.exists():
-            user_dir.mkdir()
+        user_dir.mkdir(exist_ok=True)
         self.path = path
         self.user_dir = user_dir
         self.__load_lib()
