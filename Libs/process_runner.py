@@ -1,25 +1,21 @@
+import pathlib
 import threading
-from Libs.MAA.asst.asst import Asst
-from Libs.MAA.asst.utils import Message
-from Libs.MAA.asst.asst import Asst
-from Libs.utils import *
-from Libs.model import Device
-import var
-
-import logging
-import os
 import time
+import logging
 import json
 from typing import Optional, Union
-import pathlib
 
-dev: Device = None
+from Libs.MAA.asst.asst import Asst
+from Libs.MAA.asst.utils import Message
+from Libs.model import Device
+from Libs.utils import *
+
+
 logger: logging.Logger = None
-asst: Asst = None
+asstproxy: 'AsstProxy' = None
 task: dict = None
+task_id = None
 process_str = None
-task_str = None
-current_maatask_status: tuple[Message, dict, object] = (None, None, None)
 
 
 @Asst.CallBackType
@@ -27,166 +23,174 @@ def asst_callback(msg, details, arg):
     try:
         m = Message(msg)
         d = json.loads(details.decode('utf-8'))
-        # d = details.decode('utf-8')
-        process_callback(m, d, arg)
-    except:
+        asstproxy.process_callback(m, d, arg)
+    except Exception as e:
+        logger.error(f"An unexpected error was occured when receiving callback: {e}", exc_info=True)
         pass
 
 
-def process_callback(msg: Message, details: dict, arg):
-    global dev, logger, asst, task, process_str, task_str, current_maatask_status
-    logger.debug(f'Got callback: {msg},{arg},{details}.')
-    if msg in [Message.TaskChainExtraInfo, Message.TaskChainCompleted, Message.TaskChainError, Message.TaskChainStopped, Message.TaskChainStart]:
-        current_maatask_status = (msg, details, arg)
-        logger.debug(f'current_maatask_status turned to {current_maatask_status} according to callback.')
+class AsstProxy:
 
+    def __init__(self, id, last_logger: logging.Logger, device: Device) -> None:
+        self._proxy_id = id
+        self._logger = last_logger.getChild(str(self))
+        self.device = device
+        self.current_maatask_status: tuple[Message, dict, object] = (None, None, None)
 
-def add_maatasks(asst: Asst, task):
-    for maatask in task['task']:
-        add_maatask(asst, maatask)
+        self.userdir: pathlib.Path = var.maa_env / f'userdir' / convert_the_file_name_to_a_legal_file_name_under_windows(self._proxy_id)
+        self.asst = Asst(var.maa_env, self.userdir, asst_callback)
 
-
-def add_maatask(asst: Asst, maatask):
-    logger.debug(f'Append task {maatask} to {asst}.')
-    asst.append_task(maatask['task_name'], maatask['task_config'])
-
-
-def load_res_for_asst(asst: Asst, client_type: Optional[Union[str, None]] = None):
-    incr: pathlib.Path
-    if client_type in ['Official', 'Bilibili', None]:
-        incr = var.maa_env / 'cache'
-    else:
-        incr = var.maa_env / 'resource' / 'global' / str(client_type)
-
-    logger.debug(f'Start to load asst resource and lib from incremental path {incr}.')
-    
-    max_retry_time = 5
-    for try_time in range(max_retry_time):
-        logger.debug(f'Load asst resource {try_time+1}st/{max_retry_time+1} trying...')
-        thread = threading.Thread(target=Asst.load_res,args=(asst,incr,))
-        thread.start()
-        thread.join(10)
-        if thread.is_alive():
-            logger.debug(f'Load asst resource {try_time+1}st/{max_retry_time+1} failed.')
+    def load_res(self, client_type: Optional[Union[str, None]] = None):
+        incr: pathlib.Path
+        if client_type in ['Official', 'Bilibili', None]:
+            incr = var.maa_env / 'cache'
         else:
-            break
-    
-    logger.debug(f'Asst resource and lib loaded from incremental path {incr}.')
+            incr = var.maa_env / 'resource' / 'global' / str(client_type)
 
+        self._logger.debug(f'Start to load asst resource and lib from incremental path {incr}.')
+        max_retry_time = 5
+        for try_time in range(max_retry_time):
+            self._logger.debug(f'Load asst resource {try_time+1}st/{max_retry_time+1} trying...')
+            thread = threading.Thread(target=Asst.load_res, args=(self.asst, incr,))
+            thread.start()
+            thread.join(10)
+            if thread.is_alive():
+                self._logger.debug(f'Load asst resource {try_time+1}st/{max_retry_time+1} failed.')
+            else:
+                break
+        self._logger.debug(f'Asst resource and lib loaded from incremental path {incr}.')
 
-def connect():
-    global dev, logger, asst, task, process_str, task_str, current_maatask_status
-    _execed_start = False
-    while True:
-        logger.debug(f'Try to connect emulator...')
+    def connect(self):
+        # FIXME: kill_start() only when adb can't connect to emulator
+        # _execed_start = False
 
-        if asst.connect(dev._adb, dev._addr):
-            logger.info(f'Connected to emulator.')
-            break
-        else:
-            logger.info(f'Connect failed.')
+        self.device.kill_start()
+        while True:
+            self._logger.debug(f'Try to connect emulator...')
 
-        if not _execed_start:
-            dev.kill_start()
-            _execed_start = True
+            if self.asst.connect(self.device._adb, self.device._addr):
+                self._logger.debug(f'Connected to emulator.')
+                break
+            else:
+                self._logger.debug(f'Connect failed.')
 
-        time.sleep(2)
-    pass
+            # if not _execed_start:
+            #    self.device.kill_start()
+            #    _execed_start = True
 
+            time.sleep(2)
 
-def run_maatask(maatask, time_remain) -> dict:
-    global dev, logger, asst, task, process_str, task_str, current_maatask_status
-    type = maatask['task_name']
-    config = maatask['task_config']
-    logger.info(f'Start maatask {type}, time {time_remain} sec.')
+    def add_maatask(self, maatask):
+        self._logger.debug(f'Appending task {maatask} to {self}...')
+        self.asst.append_task(maatask['task_name'], maatask['task_config'])
 
-    i = 0
-    max_retry_time = 4
-    if type == 'Award': max_retry_time = 1 #FIXME: maa bug，找不到抽卡会报错，因此忽略
-    for i in range(max_retry_time+1):
-        logger.info(f'Maatask {type} {i+1}st/{max_retry_time+1} trying...')
-        add_maatask(asst, maatask)
-        asst.start()
-        logger.debug("Asst start invoked.")
-        asst_stop_invoked = False
-        interval = 5
-        while asst.running():
-            time.sleep(interval)
-            time_remain -= interval
-            if time_remain < 0:
-                if not asst_stop_invoked and type != "Fight":
-                    logger.warning(f"Task time remains {time_remain}.")
-                    asst.stop()
-                    logger.debug(f"Asst stop invoked.")
-                    asst_stop_invoked = True
-        logger.debug(f"Asst running status ended.")
-        logger.debug(f"current_maatask_status={current_maatask_status}.")
-        if current_maatask_status[0] == Message.TaskChainError:
-            continue
-        elif current_maatask_status[0] == Message.TaskChainStopped:
-            break
-        else:
-            break
+    def add_maatasks(self, task):
+        for maatask in task['task']:
+            self.add_maatask(maatask)
 
-    logger.debug(f"Maatask {type} ended.")
-    status_message = current_maatask_status[0]
-    status_ok = status_message == Message.TaskChainCompleted
-    time_ok = time_remain >= 0
-    succeed = status_ok and time_ok
-    if succeed:
-        reason = status_message.name
-    else:
-        reason = ""
-        if status_message == Message.TaskChainError:
+    def process_callback(self, msg: Message, details: dict, arg):
+        self._logger.debug(f'Got callback: {msg},{arg},{details}.')
+        if msg in [Message.TaskChainExtraInfo, Message.TaskChainCompleted, Message.TaskChainError, Message.TaskChainStopped, Message.TaskChainStart]:
+            self.current_maatask_status = (msg, details, arg)
+            self._logger.debug(f'current_maatask_status turned to {self.current_maatask_status} according to callback.')
+
+    def run_maatask(self, maatask, time_remain) -> dict:
+        type = maatask['task_name']
+        config = maatask['task_config']
+        self._logger.info(f'Start maatask {type}, time {time_remain} sec.')
+
+        i = 0
+        max_retry_time = 4
+        if type == 'Award':
+            max_retry_time = 1  # FIXME: maa bug，找不到抽卡会报错，因此忽略
+        for i in range(max_retry_time+1):
+            self._logger.info(f'Maatask {type} {i+1}st/{max_retry_time+1} trying...')
+            self.add_maatask(maatask)
+            self.asst.start()
+            self._logger.debug("Asst start invoked.")
+            asst_stop_invoked = False
+            interval = 5
+            while self.asst.running():
+                time.sleep(interval)
+                time_remain -= interval
+                if time_remain < 0:
+                    if not asst_stop_invoked and type != "Fight":
+                        self._logger.warning(f"Task time remains {time_remain}.")
+                        self.asst.stop()
+                        self._logger.debug(f"Asst stop invoked.")
+                        asst_stop_invoked = True
+            self._logger.debug(f"Asst running status ended.")
+            self._logger.debug(f"current_maatask_status={self.current_maatask_status}.")
+            if self.current_maatask_status[0] == Message.TaskChainError:
+                continue
+            elif self.current_maatask_status[0] == Message.TaskChainStopped:
+                break
+            else:
+                break
+
+        self._logger.debug(f"Maatask {type} ended.")
+        status_message = self.current_maatask_status[0]
+        status_ok = status_message == Message.TaskChainCompleted
+        time_ok = time_remain >= 0
+        succeed = status_ok and time_ok
+        if succeed:
             reason = status_message.name
-        if not time_ok:
-            reason = 'Timeout'
+        else:
+            reason = ""
+            if status_message == Message.TaskChainError:
+                reason = status_message.name
+            if not time_ok:
+                reason = 'Timeout'
 
-    logger.debug(f"Status={status_message}, time_remain={time_remain}")
-    logger.info(f'Finished maatask {type} (succeed: {succeed}) beacuse of {reason}, remain {time_remain} sec.')
-    return {
-        "exec_result": {
-            "succeed": succeed,
-            "reason": reason,
-            "tried_times": i+1
-        },
-        "time_remain": time_remain
-    }
+        self._logger.debug(f"Status={status_message}, time_remain={time_remain}")
+        self._logger.info(f'Finished maatask {type} (succeed: {succeed}) beacuse of {reason}, remain {time_remain} sec.')
+        return {
+            "exec_result": {
+                "succeed": succeed,
+                "reason": reason,
+                "tried_times": i+1
+            },
+            "time_remain": time_remain
+        }
+
+    def __str__(self) -> str:
+        return f"asstproxy({self._proxy_id})"
+
+    def __del__(self):
+        del self.asst
 
 
 def start_task_process(process_static_params, process_shared_status):
-    global dev, logger, asst, task, process_str, task_str, current_maatask_status
-    dev = process_static_params['device']
+    global logger, task, task_id, process_str, asstproxy
+
+    device: Device = process_static_params['device']
     task = process_static_params['task']
-    task_str = task['hash']
+    task_id = task['hash']
     task_server = task['server']
-    package_name = arknights_package_name[task_server]
-    process_str = f"taskprocess({task_str})"
-    logger = dev.logger.getChild(process_str)
-    logger.info("Created.")
+    process_str = f"taskprocess({task['hash']})"
+    logger = device.logger.getChild(process_str)
+    logger.debug("Created.")
     logger.info("Ready to execute task.")
 
     try:
-        userdir: pathlib.Path = var.maa_env / f'userdir' / task_str
-        userdir.parent.mkdir(exist_ok=True)
-        asst = Asst(var.maa_env, var.maa_env / f'userdir' / convert_the_file_name_to_a_legal_file_name_under_windows(task_str), asst_callback)
-        load_res_for_asst(asst, task_server)
-        connect()
+        asstproxy = AsstProxy(task_id, logger, device)
+        asstproxy.load_res(task_server)
+        asstproxy.connect()
 
-        if dev.current_status['server'] != task_server:
-            if dev.current_status['server']:
-                dev.exec_adb(f'shell am force-stop {arknights_package_name[dev.current_status["server"]]}')
-            dev.current_status['server'] = task_server
+        if device.current_status['server'] != task_server:
+            if device.current_status['server']:
+                device.exec_adb(f'shell am force-stop {arknights_package_name[device.current_status["server"]]}')
+            device.current_status['server'] = task_server
 
         remain_time = 2*60*60  # sec
         for maatask in task['task']:
             if remain_time > 0:
-                run_result = run_maatask(maatask, remain_time)
+                run_result = asstproxy.run_maatask(maatask, remain_time)
                 remain_time = run_result['time_remain']
 
-        dev.exec_adb(f'shell screencap -p /sdcard/DCIM/AkhCLI_{task_str}_{int(time.time())}.png')
+        # dev.exec_adb(f'shell screencap -p /sdcard/DCIM/AkhCLI_{id}_{int(time.time())}.png')
 
-        del asst
+        del asstproxy
         logger.debug('Ready to exit.')
     except Exception as e:
         logger.error(f'An unexpected error was occured when running:{e}', exc_info=True)

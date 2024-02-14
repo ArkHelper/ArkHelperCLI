@@ -88,7 +88,7 @@ def run():
                         task_status[2] = process_static_params
                         task_status[3] = process_shared_status
 
-                        logger.info(f'Ready to start a task process(task={distribute_task["hash"]}).')
+                        logger.debug(f'Ready to start a task process(task={distribute_task["hash"]}).')
                         process.start()
                     else:
                         no_task()

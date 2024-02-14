@@ -1,10 +1,9 @@
-import var
-from Libs.utils import *
-
-
 import logging
 import os
 import multiprocessing
+
+import var
+from Libs.utils import *
 
 
 class Device:

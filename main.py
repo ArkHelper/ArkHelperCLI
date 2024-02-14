@@ -21,11 +21,8 @@ var.tasks = []
 var.maa_env = Path(var.global_config['maa_path'])
 var.verbose = verbose
 
-adjust_log_file()
-
 logging.basicConfig(level=logging.DEBUG,
-                    handlers=get_logging_handlers(),
-                    format='%(asctime)s[%(levelname)s][%(name)s] %(message)s')
+                    handlers=get_logging_handlers())
 
 if __name__ == '__main__':
     logging.info(f'ArkHelperCLI started up at {var.cli_env}.')

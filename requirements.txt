@@ -3,3 +3,4 @@ PyYAML
 jsonschema
 pytz
 requests
+colorlog
