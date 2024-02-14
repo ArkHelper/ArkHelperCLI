@@ -1,15 +1,13 @@
 adb_path: C:\App\platform-tools\adb.exe # both absolute and relative is ok for a path
 maa_path: C:\App\MAA
 devices:
-  - alias: mumu # alias of device
+  - alias: mumu # unique identifier of the device
     emulator_address: 127.0.0.1:16384
     start_path: C:\mumu.lnk
-    process_name:
-      - MuMuVMMHeadless.exe
-      - MuMuPlayer.exe
+    process_name: mumu # Accept a string or a list. A string means using internal logic of killing and starting. It is recommended to use this method.
   - alias: mumu1
     emulator_address: 127.0.0.1:16416
     start_path: ./../mumu1.lnk # both absolute and relative is ok for a path
-    process_name:
+    process_name: # Accept a string or a list. A list means killing all processes in it. 
       - MuMuVMMHeadless.exe
       - MuMuPlayer.exe

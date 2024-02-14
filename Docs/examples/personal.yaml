@@ -13,7 +13,7 @@
     - task_name: Recruit
       task_config:
         enable: # Cases for conditions can be used.
-          - condition: AM # The condition field should be a python expression that calculates a boolean value. Built in fields is AM (a boolean indications is AM in gametime) and built in methods are time_between(start,end)(format: '1:23:45'), date_between(start,end)(format: '2022/02/02'), datetime_between(start,end)(format: '2022/02/02-1:23:45')
+          - condition: AM # The condition field should be a python expression that calculates a boolean value (default is True). Built in fields is AM (a boolean indications is AM in gametime) and built in methods are time_between(start,end)(format: '1:23:45'), date_between(start,end)(format: '2022/02/02'), datetime_between(start,end)(format: '2022/02/02-1:23:45')
             config: true
           - config: false # CLI will ergodic the list and match the first case meets the condition.
 - device: mumu1 # A device specified in the global config can be specified to run

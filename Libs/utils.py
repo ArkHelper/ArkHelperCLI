@@ -39,16 +39,21 @@ def is_process_running(process_name):
     return False
 
 
-def get_pid_by_port(port):
-    for conn in psutil.net_connections(kind='inet'):
-        if conn.laddr.port == port:
-            return conn.pid
+def get_pid_by_port(port) -> int | None:
+    '''
+    Can safely pass in None (return None)
+    '''
+    if port:
+        for conn in psutil.net_connections(kind='inet'):
+            if conn.laddr.port == port:
+                return conn.pid
     return None
 
 
 def get_process_info(pid):
     try:
         process = psutil.Process(pid)
+        return process
     except psutil.NoSuchProcess as e:
         logging.error(f"Get process failed: {e}")
 
@@ -93,15 +98,10 @@ def parse_arg():
     return mode, verbose
 
 
-def get_cur_time_f():
-    # 获取当前时间
+def get_cur_time_f_hhmm():
     current_time = datetime.now()
-
-    # 获取当前的小时和分钟部分
     current_hour = current_time.hour
     current_minute = current_time.minute
-
-    # 将小时和分钟拼接成字符串
     return current_hour*100+current_minute
 
 
@@ -227,7 +227,12 @@ def prase_MuMuPlayer_commandline(player_pid) -> dict:
     }
 
 
-def get_MuMuPlayer_by_MuMuVMMHeadless(headless_pid) -> int:
+def get_MuMuPlayer_by_MuMuVMMHeadless(headless_pid) -> int | None:
+    '''
+    Can safely pass in None (return None)
+    '''
+    if not headless_pid:
+        return None
     index = prase_MuMuVMMHeadless_commandline(headless_pid)['index']
     player_pids = [p for p in get_pids_by_process_name('MuMuPlayer.exe') if prase_MuMuPlayer_commandline(p)['index'] == index]
     if player_pids:
