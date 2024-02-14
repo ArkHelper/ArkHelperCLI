@@ -1,3 +1,4 @@
+import threading
 from Libs.MAA.asst.asst import Asst
 from Libs.MAA.asst.utils import Message
 from Libs.MAA.asst.asst import Asst
@@ -58,7 +59,18 @@ def load_res_for_asst(asst: Asst, client_type: Optional[Union[str, None]] = None
         incr = var.maa_env / 'resource' / 'global' / str(client_type)
 
     logger.debug(f'Start to load asst resource and lib from incremental path {incr}.')
-    asst.load_res(incr)
+    
+    max_retry_time = 5
+    for try_time in range(max_retry_time):
+        logging.debug(f'Load asst resource {try_time+1}st/{max_retry_time+1} trying...')
+        thread = threading.Thread(target=Asst.load_res,args=(asst,incr,))
+        thread.start()
+        thread.join(10)
+        if thread.is_alive():
+            logging.debug(f'Load asst resource {try_time+1}st/{max_retry_time+1} failed.')
+        else:
+            break
+    
     logger.debug(f'Asst resource and lib loaded from incremental path {incr}.')
 
 
