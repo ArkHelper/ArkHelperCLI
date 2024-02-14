@@ -62,12 +62,12 @@ def load_res_for_asst(asst: Asst, client_type: Optional[Union[str, None]] = None
     
     max_retry_time = 5
     for try_time in range(max_retry_time):
-        logging.debug(f'Load asst resource {try_time+1}st/{max_retry_time+1} trying...')
+        logger.debug(f'Load asst resource {try_time+1}st/{max_retry_time+1} trying...')
         thread = threading.Thread(target=Asst.load_res,args=(asst,incr,))
         thread.start()
         thread.join(10)
         if thread.is_alive():
-            logging.debug(f'Load asst resource {try_time+1}st/{max_retry_time+1} failed.')
+            logger.debug(f'Load asst resource {try_time+1}st/{max_retry_time+1} failed.')
         else:
             break
     
