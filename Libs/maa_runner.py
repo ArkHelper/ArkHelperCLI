@@ -151,7 +151,7 @@ def get_full_task(config):
                     return start_datetime_obj <= current_datetime <= end_datetime_obj
 
                 AM = in_game_time(datetime.now(), server).hour < 12  # in gametime
-                # excuted_time_in_cur_gameday
+                # excuted_time_in_cur_gameday = 
 
                 if type(config) == list:
                     try:
@@ -186,7 +186,7 @@ def get_full_task(config):
             pass
         append()
 
-    hash = f'{server}{account_name}'
+    hash = f"{config.get('device', '')}{server}{account_name}"
     if (index := len([t for t in var.tasks if t['hash'] == hash])) != 0:
         hash += f"_{index}"
 
