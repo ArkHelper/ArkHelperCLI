@@ -81,7 +81,7 @@ class AsstProxy:
             time.sleep(2)
 
     def add_maatask(self, maatask):
-        self._logger.debug(f'Appending task {maatask} to {self}...')
+        self._logger.debug(f'Ready to append task {maatask} to {self}...')
         self.asst.append_task(maatask['task_name'], maatask['task_config'])
 
     def add_maatasks(self, task):
@@ -104,7 +104,7 @@ class AsstProxy:
         if type == 'Award':
             max_retry_time = 1  # FIXME: maa bug，找不到抽卡会报错，因此忽略
         for i in range(max_retry_time+1):
-            self._logger.info(f'Maatask {type} {i+1}st/{max_retry_time+1} trying...')
+            self._logger.info(f'Maatask {type} {i+1}st/{max_retry_time+1}max trying...')
             self.add_maatask(maatask)
             self.asst.start()
             self._logger.debug("Asst start invoked.")
@@ -143,7 +143,10 @@ class AsstProxy:
                 reason = 'Timeout'
 
         self._logger.debug(f"Status={status_message}, time_remain={time_remain}")
-        self._logger.info(f'Finished maatask {type} (succeed: {succeed}) beacuse of {reason}, remain {time_remain} sec.')
+        if succeed:
+            self._logger.info(f'Maatask {type} ended successfully beacuse of {reason}.')
+        else:
+            self._logger.warning(f'Maatask {type} ended in failure beacuse of {reason}.')
         return {
             "exec_result": {
                 "succeed": succeed,

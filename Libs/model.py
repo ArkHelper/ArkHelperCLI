@@ -43,7 +43,7 @@ class Device:
                     headless_pid = get_pid_by_port(self._port)
                     player_pid = get_MuMuPlayer_by_MuMuVMMHeadless(headless_pid)
                     for pim, pid in [('MuMuVMMHeadless', headless_pid), ('MuMuPlayer', player_pid)]:
-                        self.logger.debug(f'{pim} running(?) at process(?) {pid}.')
+                        self.logger.debug(f'{pim} is running(?) at process(?) {pid}.')
 
                     if headless_pid and player_pid:
                         return

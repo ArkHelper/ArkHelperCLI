@@ -51,13 +51,13 @@ def run():
 
             if task_status[1] != None:
                 if not task_status[1].is_alive():
-                    logger.debug(f'TaskProcess {task_status[2]["task"]["hash"]} ended, clearing.')
+                    logger.debug(f'TaskProcess {task_status[2]["task"]["hash"]} ended, ready to clear.')
                     task_status[1] = None
                     task_status[2] = None
                     task_status[3] = None
 
             if task_status[1] == None:
-                logger.debug(f'Process is None, distributing task.')
+                logger.debug(f'Process is None, ready to distribute task.')
 
                 def no_task():
                     logger.debug(f'No task to distribute. Ended.')
@@ -91,7 +91,7 @@ def run():
                     no_task()
 
         if len(ended_dev) == len(devices):
-            logging.debug(f'All devices ended. Exiting.')
+            logging.debug(f'All devices ended. Ready to exit.')
             break
         else:
             time.sleep(2)

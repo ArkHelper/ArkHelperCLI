@@ -25,8 +25,10 @@ logging.basicConfig(level=logging.DEBUG,
                     handlers=get_logging_handlers())
 
 if __name__ == '__main__':
-    logging.info(f'ArkHelperCLI started up at {var.cli_env}.')
+    logging.info(f'CLI started up at {var.cli_env}.')
+    logging.debug(f'With MAA {var.maa_env}.')
     logging.debug(f'With global config {var.global_config}.')
+    logging.debug(f'With default personal config {var.default_personal_config}.')
     logging.debug(f'With personal config {var.personal_configs}.')
 
     try:
@@ -42,6 +44,8 @@ if __name__ == '__main__':
             profile.print_stats()
         else:
             entrance()
+
+        logging.info(f'CLI ready to exit.')
 
     except Exception as e:
         logging.error(f"An unexpected error was occured when running: {e}", exc_info=True)
