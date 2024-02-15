@@ -57,3 +57,19 @@ class Device:
 
             os.startfile(os.path.abspath(self._path))
             self.logger.info(f'Started emulator at {self._path}')
+
+    def kill(self):
+        self.logger.debug(f'Try to kill emulator.')
+
+        kill_list = []
+
+        if type(self._process) == None:
+            pass
+        elif type(self._process) == list:
+            kill_list = self._process
+        elif type(self._process) == str:
+            if self._process == 'mumu':
+                kill_list = ['MuMuVMMHeadless.exe','MuMuPlayer.exe']
+                    
+        for _process in kill_list:
+            kill_processes_by_name(_process)

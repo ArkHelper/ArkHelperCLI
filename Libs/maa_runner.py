@@ -34,12 +34,6 @@ def do_conclusion():
     write_json(file, conclusion)
 
 
-def kill_all_emulators():
-    for process in var.global_config['devices']:
-        for process_name in process['process_name']:
-            kill_processes_by_name(process_name)
-
-
 def run():
     update_nav()
     # exec_adb_cmd('kill-server')
@@ -67,6 +61,7 @@ def run():
 
                 def no_task():
                     logger.debug(f'No task to distribute. Ended.')
+                    task_status[0].kill()
                     ended_dev.append(task_status[0])
                 if var.tasks:
                     distribute_task = (
@@ -101,7 +96,6 @@ def run():
         else:
             time.sleep(2)
 
-    kill_all_emulators()
     do_conclusion()
 
 
@@ -151,7 +145,7 @@ def get_full_task(config):
                     return start_datetime_obj <= current_datetime <= end_datetime_obj
 
                 AM = in_game_time(datetime.now(), server).hour < 12  # in gametime
-                # excuted_time_in_cur_gameday = 
+                # excuted_time_in_cur_gameday =
 
                 if type(config) == list:
                     try:
