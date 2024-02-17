@@ -17,21 +17,21 @@ class Device:
         self.logger = logging.getLogger(str(self))
         self.current_status = multiprocessing.Manager().dict()
         self.current_status['server'] = None
-        self.logger.debug(f'{self} inited.')
+        self.logger.debug(f'{self} inited')
 
     def __str__(self) -> str:
         return f'{self.alias}({self._addr})'
 
     @property
     def _addr(self) -> str:
-        return f"{self._host}:{self._port}"
+        return f'{self._host}:{self._port}'
 
     def exec_adb(self, cmd: str):
         exec_adb_cmd(cmd, self._addr)
 
     def kill_start(self):
         if self._path is not None:
-            self.logger.debug(f'Try to confirm emulator in the starting state.')
+            self.logger.debug(f'Try to confirm emulator in the starting state')
 
             if type(self._process) == None:
                 pass
@@ -43,7 +43,7 @@ class Device:
                     headless_pid = get_pid_by_port(self._port)
                     player_pid = get_MuMuPlayer_by_MuMuVMMHeadless(headless_pid)
                     for pim, pid in [('MuMuVMMHeadless', headless_pid), ('MuMuPlayer', player_pid)]:
-                        self.logger.debug(f'{pim} is running(?) at process(?) {pid}.')
+                        self.logger.debug(f'{pim} is running(?) at process(?) {pid}')
 
                     if headless_pid and player_pid:
                         return
@@ -59,7 +59,7 @@ class Device:
             self.logger.info(f'Started emulator at {self._path}')
 
     def kill(self):
-        self.logger.debug(f'Try to kill emulator.')
+        self.logger.debug(f'Try to kill emulator')
 
         kill_list = []
 

@@ -26,7 +26,7 @@ def update_nav():
     if last_update_time_local < last_update_time_server:
         need_update = True
 
-    logging.debug(f'Tasks resource last update time is {last_update_time_local} and the data on server is {last_update_time_server}. need to update is {need_update}.')
+    logging.debug(f'Tasks resource last update time is {last_update_time_local} and the data on server is {last_update_time_server}. need to update is {need_update}')
 
     if need_update:
         ota_tasks_url = 'https://ota.maa.plus/MaaAssistantArknights/api/resource/tasks.json'
@@ -34,9 +34,9 @@ def update_nav():
         
         ota_tasks_path.parent.mkdir(parents=True, exist_ok=True)
         write_file(ota_tasks_path, requests.get(ota_tasks_url).content.decode('utf-8'))
-        logging.debug(f'Asst tasks updated.')
+        logging.debug(f'Asst tasks updated')
 
         write_file(last_update_time_file_local, last_update_time_content_server.decode('utf-8'))
-        logging.debug(f'Last update time updated.')
+        logging.debug(f'Last update time updated')
 
     pass

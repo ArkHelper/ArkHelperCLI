@@ -22,9 +22,9 @@ def mk_CLI_dir():
 
 
 def convert_the_file_name_to_a_legal_file_name_under_windows(filename):
-    end = ""
+    end = ''
     for char in filename:
-        if not char in ['\\', '/', ':', '*', '?', '"', '<', '>', '|']:
+        if not char in ['\\', '/', ':', '*', '?', '\"', '<', '>', '|']:
             end += char
     return end
 
@@ -56,7 +56,7 @@ def get_process_info(pid):
         process = psutil.Process(pid)
         return process
     except psutil.NoSuchProcess as e:
-        logging.error(f"Get process failed: {e}")
+        logging.error(f'Get process failed: {e}')
 
 
 def exec_adb_cmd(cmd, device=None):
@@ -68,7 +68,7 @@ def exec_adb_cmd(cmd, device=None):
             adb_command.extend(['-s', device])
         adb_command.extend(cmd_ls)
 
-        logging.debug(f'Execing adb cmd: {" ".join(adb_command)}.')
+        logging.debug(f'Execing adb cmd: {" ".join(adb_command)}')
         result = subprocess.run(adb_command, capture_output=True, text=True, check=True, encoding='utf-8')
         logging.debug(f'adb output: {result.stdout}')
     except subprocess.CalledProcessError as e:
@@ -183,10 +183,10 @@ def kill_processes_by_pid(pid) -> bool:
     logging.info(f'killing process {pid}')
     try:
         result = subprocess.run(['taskkill', '/F', '/PID', f'{pid}'], check=True, capture_output=True, text=True)
-        logging.debug(f'Killing result:{result.stdout}.')
+        logging.debug(f'Killing result:{result.stdout}')
         return True
     except subprocess.CalledProcessError as e:
-        logging.error(f'Killing result:{e.stderr}.')
+        logging.error(f'Killing result:{e.stderr}')
         return False
 
 
@@ -196,7 +196,7 @@ def get_process_command_line(pid):
         command_line = process.cmdline()
         return command_line
     except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess) as e:
-        print(f"Error: {e}")
+        print(f'Error: {e}')
         return None
 
 
@@ -206,7 +206,7 @@ def get_process_start_location(pid):
         start_location = process.exe()
         return start_location
     except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess) as e:
-        print(f"Error: {e}")
+        print(f'Error: {e}')
         return None
 
 
@@ -228,7 +228,7 @@ def prase_MuMuVMMHeadless_commandline(headless_pid) -> dict:
 
     parsed, unknown = parser.parse_known_args(get_process_command_line(headless_pid)[1:])
     return {
-        "index": parsed.comment.split('-')[-1]
+        'index': parsed.comment.split('-')[-1]
     }
 
 
@@ -238,7 +238,7 @@ def prase_MuMuPlayer_commandline(player_pid) -> dict:
 
     parsed, unknown = parser.parse_known_args(get_process_command_line(player_pid)[1:])
     return {
-        "index": parsed.v if parsed.v else '0'
+        'index': parsed.v if parsed.v else '0'
     }
 
 

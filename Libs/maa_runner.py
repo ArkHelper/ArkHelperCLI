@@ -21,11 +21,11 @@ def do_conclusion():
 
     def _get_conclusion():
         return {
-            "msg": 'AkhCLI任务全部完成',
-            "startTime": int(var.start_time.timestamp()*1000),
-            "endTime": int(time.time()*1000),
-            "code": 0,
-            "extra": {}
+            'msg': 'AkhCLI任务全部完成',
+            'startTime': int(var.start_time.timestamp()*1000),
+            'endTime': int(time.time()*1000),
+            'code': 0,
+            'extra': {}
         }
 
     file.parent.mkdir(exist_ok=True)
@@ -51,16 +51,16 @@ def run():
 
             if task_status[1] != None:
                 if not task_status[1].is_alive():
-                    logger.debug(f'TaskProcess {task_status[2]["task"]["hash"]} ended, ready to clear.')
+                    logger.debug(f'TaskProcess {task_status[2]["task"]["hash"]} ended, ready to clear')
                     task_status[1] = None
                     task_status[2] = None
                     task_status[3] = None
 
             if task_status[1] == None:
-                logger.debug(f'Process is None, ready to distribute task.')
+                logger.debug(f'Process is None, ready to distribute task')
 
                 def no_task():
-                    logger.debug(f'No task to distribute. Ended.')
+                    logger.debug(f'No task to distribute. Ended')
                     task_status[0].kill()
                     ended_dev.append(task_status[0])
                 if var.tasks:
@@ -73,8 +73,8 @@ def run():
                     if distribute_task:
                         var.tasks.remove(distribute_task)
                         process_static_params = {
-                            "task": distribute_task,
-                            "device": task_status[0]
+                            'task': distribute_task,
+                            'device': task_status[0]
                         }
                         process_shared_status = multiprocessing.Manager().dict()
                         process = multiprocessing.Process(target=start_task_process, args=(process_static_params, process_shared_status, ))
@@ -83,7 +83,7 @@ def run():
                         task_status[2] = process_static_params
                         task_status[3] = process_shared_status
 
-                        logger.debug(f'Ready to start a task process(task={distribute_task["hash"]}).')
+                        logger.debug(f'Ready to start a task process(task={distribute_task["hash"]})')
                         process.start()
                     else:
                         no_task()
@@ -91,7 +91,7 @@ def run():
                     no_task()
 
         if len(ended_dev) == len(devices):
-            logging.debug(f'All devices ended. Ready to exit.')
+            logging.debug(f'All devices ended. Ready to exit')
             break
         else:
             time.sleep(2)
@@ -125,23 +125,23 @@ def get_full_task(config):
                 config = final_task_config[key]
 
                 def time_between(time_start, time_end):
-                    current_time = datetime.now().strftime("%H:%M")
-                    start_time_obj = datetime.strptime(time_start, "%H:%M")
-                    end_time_obj = datetime.strptime(time_end, "%H:%M")
-                    current_time_obj = datetime.strptime(current_time, "%H:%M")
+                    current_time = datetime.now().strftime('%H:%M')
+                    start_time_obj = datetime.strptime(time_start, '%H:%M')
+                    end_time_obj = datetime.strptime(time_end, '%H:%M')
+                    current_time_obj = datetime.strptime(current_time, '%H:%M')
                     return start_time_obj <= current_time_obj <= end_time_obj
 
                 def date_between(date_start, date_end):
-                    current_date = datetime.now().strftime("%Y/%m/%d")
-                    start_date_obj = datetime.strptime(date_start, "%Y/%m/%d")
-                    end_date_obj = datetime.strptime(date_end, "%Y/%m/%d")
-                    current_date_obj = datetime.strptime(current_date, "%Y/%m/%d")
+                    current_date = datetime.now().strftime('%Y/%m/%d')
+                    start_date_obj = datetime.strptime(date_start, '%Y/%m/%d')
+                    end_date_obj = datetime.strptime(date_end, '%Y/%m/%d')
+                    current_date_obj = datetime.strptime(current_date, '%Y/%m/%d')
                     return start_date_obj <= current_date_obj <= end_date_obj
 
                 def datetime_between(datetime_start, datetime_end):
                     current_datetime = datetime.now()
-                    start_datetime_obj = datetime.strptime(datetime_start, "%Y/%m/%d-%H:%M:%S")
-                    end_datetime_obj = datetime.strptime(datetime_end, "%Y/%m/%d-%H:%M:%S")
+                    start_datetime_obj = datetime.strptime(datetime_start, '%Y/%m/%d-%H:%M:%S')
+                    end_datetime_obj = datetime.strptime(datetime_end, '%Y/%m/%d-%H:%M:%S')
                     return start_datetime_obj <= current_datetime <= end_datetime_obj
 
                 AM = in_game_time(datetime.now(), server).hour < 12  # in gametime
@@ -180,9 +180,9 @@ def get_full_task(config):
             pass
         append()
 
-    hash = f"{config.get('device', '')}{server}{account_name}"
+    hash = f'{config.get("device", "")}{server}{account_name}'
     if (index := len([t for t in var.tasks if t['hash'] == hash])) != 0:
-        hash += f"_{index}"
+        hash += f'_{index}'
 
     task = {
         'hash': hash,
@@ -191,5 +191,5 @@ def get_full_task(config):
         'server': server,
         'account_name': account_name
     }
-    logging.debug(f'Initialization ended for task {hash}.')
+    logging.debug(f'Initialization ended for task {hash}')
     return task
