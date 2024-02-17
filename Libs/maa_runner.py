@@ -2,7 +2,6 @@ import var
 from Libs.utils import *
 from Libs.model import Device
 from Libs.process_runner import start_task_process
-from Libs.maa_util import update_nav
 from Libs.task_planner import *
 
 
