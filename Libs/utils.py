@@ -147,7 +147,10 @@ def get_logging_handlers():
         log_file.parent.mkdir(exist_ok=True)
         log_file.touch()
 
-    adjust_log_file()
+    try:
+        adjust_log_file()
+    except:
+        pass
 
     file_handler = logging.FileHandler(str(log_file), encoding='utf-8')
     file_handler.setLevel(file_level)
