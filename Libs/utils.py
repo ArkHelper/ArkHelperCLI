@@ -273,14 +273,6 @@ def in_game_time(time, server='Official'):
     return (time.astimezone(timezone.utc)-timedelta(hours=4)).replace(tzinfo=pytz.utc).astimezone(zone)
 
 
-def in_game_week(time, server):
-    '''
-    Get weekday in the game.
-    Returns an Int in 1~7, which means 周一二三四五六日 in Chinese.
-    '''
-    return in_game_time(time, server).weekday() + 1
-
-
 def byte_to_MB(byte):
     return byte / (1024**2)
 
@@ -295,17 +287,17 @@ def adjust_log_file():
             log_file.rename(log_backup_file)
 
 
-# stage_opening_time, 1~7 means 周一二三四五六日 in Chinese.
+# stage_opening_time, where Monday == 0 ... Sunday == 6.
 arknights_stage_opening_time = {
-    'SK': [1, 3, 5, 6],
-    'AP': [1, 4, 6, 7],
-    'CA': [2, 3, 5, 7],
-    'CE': [2, 4, 6, 7],
-    'LS': [1, 2, 3, 4, 5, 6, 7],
-    'PR-A': [1, 4, 5, 7],
-    'PR-B': [1, 2, 5, 6],
-    'PR-C': [3, 4, 6, 7],
-    'PR-D': [2, 3, 6, 7]
+    'SK': [0, 2, 4, 5],
+    'AP': [0, 3, 5, 6],
+    'CA': [1, 2, 4, 6],
+    'CE': [1, 3, 5, 6],
+    'LS': [0, 1, 2, 3, 4, 5, 6],
+    'PR-A': [0, 3, 4, 6],
+    'PR-B': [0, 1, 4, 5],
+    'PR-C': [2, 3, 5, 6],
+    'PR-D': [1, 2, 5, 6]
 }
 
 arknights_package_name = {
@@ -341,6 +333,7 @@ def generate_hash(input_string):
     six_digit_hash = hex_dig[:6]
     return six_digit_hash
 
+
 def update_nav():
     path = var.maa_env
 
@@ -366,7 +359,7 @@ def update_nav():
     if need_update:
         ota_tasks_url = 'https://ota.maa.plus/MaaAssistantArknights/api/resource/tasks.json'
         ota_tasks_path = path / 'cache' / 'resource' / 'tasks.json'
-        
+
         ota_tasks_path.parent.mkdir(parents=True, exist_ok=True)
         write_file(ota_tasks_path, requests.get(ota_tasks_url).content.decode('utf-8'))
         logging.debug(f'Asst tasks updated')
