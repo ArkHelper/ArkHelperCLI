@@ -62,4 +62,4 @@ def start_task_process(process_static_params, process_shared_status):
         del asstproxy
         logger.debug('Ready to exit')
     except Exception as e:
-        logger.error(f'An unexpected error was occured when running:{e}', exc_info=True)
+        logger.error(f'An unexpected error was occured when running: {e}', exc_info=True)

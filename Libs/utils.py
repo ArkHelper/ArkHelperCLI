@@ -1,7 +1,11 @@
+import ctypes
 import hashlib
 import json
 import logging
 import random
+import threading
+import time
+from typing import Callable
 import psutil
 import argparse
 import subprocess
@@ -368,3 +372,50 @@ def update_nav():
         logging.debug(f'Last update time updated')
 
     pass
+
+
+def run_in_thread(func: Callable, args: tuple, max_try_time=5, timeout=10, logger=logging.root):
+    func_with_arg_str = f"{func.__name__}{str(args)}"
+
+    class ThreadWithException(threading.Thread):
+        def __init__(self, name):
+            threading.Thread.__init__(self)
+            self.name = name
+
+        def run(self):
+            # target function of the thread class
+            try:  # 用try/finally 的方式处理exception，从而kill thread
+                func(*args)
+            finally:
+                pass
+
+        def get_id(self):
+            # returns id of the respective thread
+            if hasattr(self, '_thread_id'):
+                return self._thread_id
+            for id, thread in threading._active.items():
+                if thread is self:
+                    return id
+
+        def stop_byexcept(self):
+            thread_id = self.get_id()
+            res = ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id,
+                                                             ctypes.py_object(SystemExit))
+            if res > 1:
+                ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
+
+    for try_time in range(max_try_time):
+        logger.debug(f'{func_with_arg_str} {try_time+1}st/{max_try_time}max trying')
+        thread = ThreadWithException('thread0')
+        thread.start()
+        thread.join(timeout)
+        if thread.is_alive():
+            logger.warning(f'{func_with_arg_str} {try_time+1}st/{max_try_time}max failed')
+            thread.stop_byexcept()
+            thread.join(timeout)
+            del thread
+            continue
+        else:
+            return True
+
+    return False

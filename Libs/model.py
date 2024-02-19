@@ -100,16 +100,8 @@ class AsstProxy:
             incr = var.maa_env / 'resource' / 'global' / str(client_type)
 
         self._logger.debug(f'Start to load asst resource and lib from incremental path {incr}')
-        max_retry_time = 5
-        for try_time in range(max_retry_time):
-            self._logger.debug(f'Load asst resource {try_time+1}st/{max_retry_time+1} trying')
-            thread = threading.Thread(target=Asst.load_res, args=(self.asst, incr,))
-            thread.start()
-            thread.join(10)
-            if thread.is_alive():
-                self._logger.debug(f'Load asst resource {try_time+1}st/{max_retry_time+1} failed')
-            else:
-                break
+        if not run_in_thread(Asst.load_res, (self.asst, incr,), 2, 5, self._logger):
+            raise Exception('Asst failed to load resource')
         self._logger.debug(f'Asst resource and lib loaded from incremental path {incr}')
 
     def connect(self):
@@ -152,11 +144,11 @@ class AsstProxy:
         self._logger.info(f'Start maatask {type}, time {time_remain} sec')
 
         i = 0
-        max_retry_time = 4
+        max_try_time = 4
         if type == 'Award':
-            max_retry_time = 1  # FIXME: maa bug，找不到抽卡会报错，因此忽略
-        for i in range(max_retry_time+1):
-            self._logger.info(f'Maatask {type} {i+1}st/{max_retry_time+1}max trying')
+            max_try_time = 1  # FIXME: maa bug，找不到抽卡会报错，因此忽略
+        for i in range(max_try_time):
+            self._logger.info(f'Maatask {type} {i+1}st/{max_try_time}max trying')
             self.add_maatask(maatask)
             self.asst.start()
             self._logger.debug('Asst start invoked')
@@ -193,6 +185,8 @@ class AsstProxy:
                 reason = status_message.name
             if not time_ok:
                 reason = 'Timeout'
+            if type == "StartUp":
+                self.device.exec_adb(f'shell am force-stop {arknights_package_name[self.device.current_status["server"]]}')
 
         self._logger.debug(f'Status={status_message}, time_remain={time_remain}')
         if succeed:
