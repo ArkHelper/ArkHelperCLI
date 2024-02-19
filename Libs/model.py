@@ -67,18 +67,17 @@ class Device:
     def kill(self):
         self.logger.debug(f'Try to kill emulator')
 
-        kill_list = []
-
         if type(self._process) == None:
             pass
         elif type(self._process) == list:
-            kill_list = self._process
+            for pim in self._process:
+                kill_processes_by_name(pim)
         elif type(self._process) == str:
             if self._process == 'mumu':
-                kill_list = ['MuMuVMMHeadless.exe', 'MuMuPlayer.exe']
-
-        for _process in kill_list:
-            kill_processes_by_name(_process)
+                headless_pid = get_pid_by_port(self._port)
+                player_pid = get_MuMuPlayer_by_MuMuVMMHeadless(headless_pid)
+                kill_processes_by_pid(headless_pid)
+                kill_processes_by_pid(player_pid)
 
 
 class AsstProxy:

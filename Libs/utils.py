@@ -51,7 +51,7 @@ def get_pid_by_port(port) -> int | None:
     '''
     if port:
         for conn in psutil.net_connections(kind='inet'):
-            if conn.laddr.port == port:
+            if conn.laddr.port == int(port):
                 return conn.pid
     return None
 
