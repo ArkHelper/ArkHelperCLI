@@ -54,7 +54,11 @@ def start_task_process(process_static_params, process_shared_status):
         remain_time = 2*60*60  # sec
         for maatask in task['task']:
             if remain_time > 0:
+                maatask_name = maatask['task_name']
+                
                 run_result = asstproxy.run_maatask(maatask, remain_time)
+                if maatask_name == 'StartUp' and not run_result['exec_result']['succeed']:
+                    break
                 remain_time = run_result['time_remain']
 
         # dev.exec_adb(f'shell screencap -p /sdcard/DCIM/AkhCLI_{id}_{int(time.time())}.png')
