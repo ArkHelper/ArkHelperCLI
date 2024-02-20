@@ -5,7 +5,6 @@ import logging
 import random
 import threading
 import time
-from typing import Callable
 import psutil
 import argparse
 import subprocess
@@ -13,6 +12,7 @@ import requests
 import yaml
 import pytz
 import colorlog
+from typing import Callable
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
 
