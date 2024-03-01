@@ -1,5 +1,6 @@
 adb_path: C:\App\platform-tools\adb.exe # both absolute and relative is ok for a path
 maa_path: C:\App\MAA
+restart_adb: false
 devices:
   - alias: mumu # unique identifier of the device
     emulator_address: 127.0.0.1:16384
