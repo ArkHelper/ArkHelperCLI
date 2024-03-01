@@ -7,6 +7,7 @@ config_path: Path
 log_path: Path
 static_path: Path
 maa_env: Path
+maa_usrdir_path:Path
 
 global_config: dict
 personal_configs: list[dict]

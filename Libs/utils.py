@@ -24,6 +24,7 @@ def mk_CLI_dir():
     var.config_path.mkdir(exist_ok=True)
     var.log_path.mkdir(exist_ok=True)
     var.static_path.mkdir(exist_ok=True)
+    var.maa_usrdir_path.mkdir(exist_ok=True)
 
 
 def convert_the_file_name_to_a_legal_file_name_under_windows(filename):
