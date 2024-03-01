@@ -35,7 +35,7 @@ def do_conclusion():
 
 def run():
     update_nav()
-    if var.global_config['restart_adb']:
+    if var.global_config.get('restart_adb', False):
         exec_adb_cmd('kill-server')
         exec_adb_cmd('start-server')
     # kill_all_emulators()
