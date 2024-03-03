@@ -35,8 +35,8 @@ def do_conclusion():
 
 def run():
     update_nav()
-    # exec_adb_cmd('kill-server')
-    # exec_adb_cmd('start-server')
+    exec_adb_cmd('kill-server')
+    exec_adb_cmd('start-server')
     # kill_all_emulators()
 
     [var.tasks.append(get_full_task(personal_config)) for personal_config in var.personal_configs]

@@ -15,6 +15,7 @@ import colorlog
 from typing import Callable
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
+from line_profiler import LineProfiler
 
 import var
 
