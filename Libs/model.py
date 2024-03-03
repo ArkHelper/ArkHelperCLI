@@ -104,7 +104,7 @@ class AsstProxy:
         self._logger.debug(f'Asst resource and lib loaded from incremental path {incr}')
 
     def connect(self):
-        # FIXME: kill_start() only when adb can't connect to emulator
+        # TODO: kill_start() only when adb can't connect to emulator
         # _execed_start = False
 
         self.device.kill_start()
@@ -144,10 +144,23 @@ class AsstProxy:
 
         i = 0
         max_try_time = 4
+
         if type == 'Award':
             max_try_time = 1  # FIXME: maa bug，找不到抽卡会报错，因此忽略
+        if type == 'Fight':
+            stage = config['stage']
+            standby_stage = config['standby_stage']
+            config.pop('standby_stage')
+
         for i in range(max_try_time):
             self._logger.info(f'Maatask {type} {i+1}st/{max_try_time}max trying')
+
+            if type == 'Fight':
+                if i == 0:
+                    maatask['task_config']['stage'] = stage
+                else:
+                    maatask['task_config']['stage'] = standby_stage
+
             self.add_maatask(maatask)
             self.asst.start()
             self._logger.debug('Asst start invoked')
