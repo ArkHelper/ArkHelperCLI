@@ -178,6 +178,8 @@ class AsstProxy:
             self._logger.debug(f'Asst running status ended')
             self._logger.debug(f'current_maatask_status={self.current_maatask_status}')
             if self.current_maatask_status[0] == Message.TaskChainError:
+                if type == "StartUp":
+                    self.device.exec_adb(f'shell am force-stop {arknights_package_name[self.device.current_status["server"]]}')
                 continue
             elif self.current_maatask_status[0] == Message.TaskChainStopped:
                 break
@@ -197,8 +199,6 @@ class AsstProxy:
                 reason = status_message.name
             if not time_ok:
                 reason = 'Timeout'
-            if type == "StartUp":
-                self.device.exec_adb(f'shell am force-stop {arknights_package_name[self.device.current_status["server"]]}')
 
         self._logger.debug(f'Status={status_message}, time_remain={time_remain}')
         if succeed:
