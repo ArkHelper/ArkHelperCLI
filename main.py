@@ -12,15 +12,15 @@ var.config_path = var.data_path / 'Config'
 var.log_path = var.data_path / 'Log'
 var.static_path = var.data_path / 'Static'
 
-mk_CLI_dir()
-
 var.global_config = read_config('global')
 var.personal_configs = read_config('personal')
 var.default_personal_config = read_config('default_personal')
 var.tasks = []
 var.maa_env = Path(var.global_config['maa_path'])
+var.maa_usrdir_path = var.maa_env / f'userdir'
 var.verbose = verbose
 
+mk_CLI_dir()
 logging.basicConfig(level=logging.DEBUG,
                     handlers=get_logging_handlers())
 

@@ -9,6 +9,7 @@
   task_config:
     enable: true
     stage: ""
+    standby_stage: 1-7 # Backup stage which will be automatically selected after the first failure of the battle task. This field will not be passed into the maa
     medicine: 0
     expiring_medicine: 9999999
     stone: 0
