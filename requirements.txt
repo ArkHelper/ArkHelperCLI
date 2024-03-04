@@ -3,3 +3,4 @@ PyYAML
 pytz
 requests
 colorlog
+line_profiler

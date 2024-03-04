@@ -28,7 +28,7 @@ def mk_CLI_dir():
     var.maa_usrdir_path.mkdir(exist_ok=True)
 
 
-def convert_the_file_name_to_a_legal_file_name_under_windows(filename):
+def convert_str_to_legal_filename_windows(filename):
     end = ''
     for char in filename:
         if not char in ['\\', '/', ':', '*', '?', '\"', '<', '>', '|']:
@@ -267,15 +267,14 @@ def get_MuMuPlayer_by_MuMuVMMHeadless(headless_pid) -> int | None:
 
 
 def in_game_time(time, server='Official'):
-    zone = pytz.timezone('GMT')
     if server in ('Official', 'Bilibili', 'txwy'):
-        zone = pytz.timezone('Asia/Shanghai')
-        # zone = pytz.timezone('Asia/Taipei')
+        zone = pytz.timezone('Asia/Shanghai')  # Asia/Taipei
     elif server in ('YoStarJP', 'YoStarKR'):
-        zone = pytz.timezone('Asia/Tokyo')
-        # zone = pytz.timezone('Asia/Seoul')
-    elif server == '':
-        zone = pytz.timezone('Asia/Shanghai')
+        zone = pytz.timezone('Asia/Tokyo')  # Asia/Seoul
+    elif server in ('YoStarEN'):
+        zone = pytz.timezone('GMT')
+    else:
+        zone = pytz.timezone('GMT')
     return (time.astimezone(timezone.utc)-timedelta(hours=4)).replace(tzinfo=pytz.utc).astimezone(zone)
 
 

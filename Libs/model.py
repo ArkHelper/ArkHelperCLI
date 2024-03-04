@@ -88,7 +88,7 @@ class AsstProxy:
         self.device = device
         self.current_maatask_status: tuple[Message, dict, object] = (None, None, None)
 
-        self.userdir: pathlib.Path = var.maa_usrdir_path / convert_the_file_name_to_a_legal_file_name_under_windows(self._proxy_id)
+        self.userdir: pathlib.Path = var.maa_usrdir_path / convert_str_to_legal_filename_windows(self._proxy_id)
         self.asst = Asst(var.maa_env, self.userdir, asst_callback)
 
     def load_res(self, client_type: Optional[Union[str, None]] = None):
