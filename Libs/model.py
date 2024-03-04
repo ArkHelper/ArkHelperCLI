@@ -23,6 +23,7 @@ class Device:
         self.logger = logging.getLogger(str(self))
         self.current_status = multiprocessing.Manager().dict()
         self.current_status['server'] = None
+        
         self.logger.debug(f'{self} inited')
 
     def __str__(self) -> str:

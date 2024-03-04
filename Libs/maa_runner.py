@@ -1,3 +1,5 @@
+from csv import DictReader
+from dataclasses import dataclass
 import var
 from Libs.utils import *
 from Libs.model import Device
@@ -40,32 +42,39 @@ def run():
         exec_adb_cmd('start-server')
     # kill_all_emulators()
 
+    @dataclass
+    class DeviceStatus:
+        device: Device
+        process: multiprocessing.Process | None
+        process_static_params: dict | None
+        process_shared_status: dict | None
+
     [var.tasks.append(get_full_task(personal_config)) for personal_config in var.personal_configs]
     devices = [Device(dev_config) for dev_config in var.global_config['devices']]
-    task_statuses: list[list[Device, multiprocessing.Process, dict, dict]] = [[_device, None, None, None] for _device in devices]
+    statuses: list[DeviceStatus] = [DeviceStatus(_device, None, None, None) for _device in devices]
 
     while True:
         ended_dev = []
-        for task_status in task_statuses:
-            logger = task_status[0].logger
+        for status in statuses:
+            logger = status.device.logger
 
-            if task_status[1] != None:
-                if not task_status[1].is_alive():
-                    logger.debug(f'TaskProcess {task_status[2]["task"]["hash"]} ended, ready to clear')
-                    task_status[1] = None
-                    task_status[2] = None
-                    task_status[3] = None
+            if status.process != None:
+                if not status.process.is_alive():
+                    logger.debug(f'TaskProcess {status.process_static_params["task"]["hash"]} ended, ready to clear')
+                    status.process = None
+                    status.process_static_params = None
+                    status.process_shared_status = None
 
-            if task_status[1] == None:
+            if status.process == None:
                 logger.debug(f'Process is None, ready to distribute task')
 
                 def no_task():
                     logger.debug(f'No task to distribute. Ended')
-                    task_status[0].kill()
-                    ended_dev.append(task_status[0])
+                    status.device.kill()
+                    ended_dev.append(status.device)
                 if var.tasks:
                     distribute_task = (
-                        [task for task in var.tasks if task.get('device') == task_status[0].alias] or
+                        [task for task in var.tasks if task.get('device') == status.device.alias] or
                         [task for task in var.tasks if task.get('device') is None] or
                         [None]
                     )[0]
@@ -74,14 +83,14 @@ def run():
                         var.tasks.remove(distribute_task)
                         process_static_params = {
                             'task': distribute_task,
-                            'device': task_status[0]
+                            'device': status.device
                         }
                         process_shared_status = multiprocessing.Manager().dict()
                         process = multiprocessing.Process(target=start_task_process, args=(process_static_params, process_shared_status, ))
 
-                        task_status[1] = process
-                        task_status[2] = process_static_params
-                        task_status[3] = process_shared_status
+                        status.process = process
+                        status.process_static_params = process_static_params
+                        status.process_shared_status = process_shared_status
 
                         logger.debug(f'Ready to start a task process(task={distribute_task["hash"]})')
                         process.start()
