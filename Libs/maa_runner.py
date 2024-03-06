@@ -37,7 +37,7 @@ def do_conclusion():
 def get_report(result):
     task_strs = []
 
-    def get_task_str(task_result):
+    def get_task_str(task_id):
         def get_maa_tasks_str(maatasks):
             maat_strs = []
             for maatask in maatasks:
@@ -48,13 +48,16 @@ def get_report(result):
                     maat_strs.append('    {} ×: {}'.format(maatask_name, '\n'.join(maatask['exec_result']['reason'])))
             return '\n'.join(maat_strs)
 
-        task_id = task_result['task']
-        if task_result['exec_result']['succeed']:
-            return '{} √'.format(task_id)
+        task_result = result[task_id]
+        if task_result:
+            if task_result['exec_result']['succeed']:
+                return '{} √'.format(task_id)
+            else:
+                return '{} ×: \n{}'.format(task_id, get_maa_tasks_str(task_result['exec_result']['maatasks']))
         else:
-            return '{} ×: \n{}'.format(task_id, get_maa_tasks_str(task_result['exec_result']['maatasks']))
+            return '{} ×: \n{}'.format(task_id, 'Task failed to run')
 
-    [task_strs.append(get_task_str(task)) for task in result]
+    [task_strs.append(get_task_str(task_name)) for task_name in result]
     task_strs = '\n'.join(task_strs)
     return \
         f"""ArkHelperCLI has finished all of the tasks
@@ -73,7 +76,7 @@ def web_hook(report):
 
         replace_list = [
             ('#{report}', report)
-        ] # add replacer in it to support more builtin vars
+        ]  # add replacer in it to support more builtin vars
         for origin, after in replace_list:
             text = text.replace(origin, replace_escape(after))
         return text
@@ -113,7 +116,7 @@ def run():
     [var.tasks.append(get_full_task(personal_config)) for personal_config in var.personal_configs]
     devices = [Device(dev_config) for dev_config in var.global_config['devices']]
     statuses: list[DeviceStatus] = [DeviceStatus(_device, None, None, None) for _device in devices]
-    running_result = []
+    running_result = {task.get('hash'): None for task in var.tasks}
 
     while True:
         ended_dev = []
@@ -122,8 +125,9 @@ def run():
 
             if status.process != None:
                 if not status.process.is_alive():
-                    logger.debug(f'TaskProcess {status.process_static_params["task"]["hash"]} ended, ready to clear')
-                    running_result.append(status.process_shared_status['result'])
+                    task_hash = status.process_static_params["task"]["hash"]
+                    logger.debug(f'TaskProcess {task_hash} ended, ready to clear')
+                    running_result[task_hash] = status.process_shared_status.get('result', None)
                     status.process = None
                     status.process_static_params = None
                     status.process_shared_status = None
