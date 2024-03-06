@@ -1,6 +1,7 @@
 adb_path: C:\App\platform-tools\adb.exe # both absolute and relative is ok for a path
 maa_path: C:\App\MAA
-restart_adb: false
+restart_adb: false # optional
+max_task_waiting_time: 3600 # second, optional
 devices:
   - alias: mumu # unique identifier of the device
     emulator_address: 127.0.0.1:16384
@@ -12,7 +13,7 @@ devices:
     process_name: # Accept a string or a list. A list means killing all processes in it. 
       - MuMuVMMHeadless.exe
       - MuMuPlayer.exe
-webhook:
+webhook: # optional
   - method: POST
     url: http://your.host.or.ip:1234/send_private_msg
     request_body: # built-in variable is available. So do url. Including:

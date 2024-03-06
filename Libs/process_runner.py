@@ -55,7 +55,7 @@ def start_task_process(process_static_params, process_shared_status):
                 device.exec_adb(f'shell am force-stop {arknights_package_name[device.current_status["server"]]}')
             device.current_status['server'] = task_server
 
-        remain_time = 2*60*60  # sec
+        remain_time = var.global_config.get('max_task_waiting_time', 3600)
         execute, execute_disabled_by = True, ''
         for maatask in task['task']:
             maatask_name = maatask['task_name']
