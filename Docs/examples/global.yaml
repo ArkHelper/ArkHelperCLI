@@ -12,3 +12,21 @@ devices:
     process_name: # Accept a string or a list. A list means killing all processes in it. 
       - MuMuVMMHeadless.exe
       - MuMuPlayer.exe
+webhook:
+  - method: POST
+    url: http://your.domain.or.url:1234/send_private_msg
+    request_body: # built-in variable is available. So do url. Including:
+                  # #{report} : report text after the end of run
+    >
+      {
+          "user_id": 123456789,
+          "message": {
+              "type": "text",
+              "data": {
+                  "text": "#{report}"
+              }
+          }
+      }
+    headers: 
+      Authorization: "Bearer 123456789987654321"
+      Content-Type: 'application/json'

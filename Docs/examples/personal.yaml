@@ -19,8 +19,8 @@
                           # Weekday (day of the week, where Monday == 0 ... Sunday == 6)
                           # and built in methods are: 
                           # time_between(start,end)(format: '1:23:45'),
-                          # date_between(start,end)(format: '2022/02/02'),
-                          # datetime_between(start,end)(format: '2022/02/02-1:23:45')
+                          # date_between(start,end)(format: '2022-02-02'),
+                          # datetime_between(start,end)(format: '2022-02-02 1:23:45')
             config: true
           - config: false # CLI will ergodic the list and match the first case meets the condition.
 - device: mumu1 # A device specified in the global config can be specified to run
