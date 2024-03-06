@@ -110,8 +110,10 @@ class AsstProxy:
         # _execed_start = False
 
         self.device.kill_start()
-        while True:
-            self._logger.debug(f'Try to connect emulator')
+
+        max_try_time = 50
+        for tried_time in range(max_try_time):
+            self._logger.debug(f'Connect emulator {tried_time}st/{max_try_time}trying')
 
             if self.asst.connect(self.device._adb, self.device._addr):
                 self._logger.debug(f'Connected to emulator')

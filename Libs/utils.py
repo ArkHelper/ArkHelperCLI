@@ -15,7 +15,7 @@ import colorlog
 from typing import Callable
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
-from line_profiler import LineProfiler
+from line_profiler import LineProfiler # do not remove this. It's needed by main.py, passing by import *
 
 import var
 
@@ -185,7 +185,7 @@ def kill_processes_by_name(process_name) -> bool:
         logging.debug(f'killing result:{result.stdout}')
         return True
     except subprocess.CalledProcessError as e:
-        logging.error(f'killing result:{e.stderr}')
+        logging.warning(f'killing result:{e.stderr}')
         return False
 
 
@@ -196,7 +196,7 @@ def kill_processes_by_pid(pid) -> bool:
         logging.debug(f'Killing result:{result.stdout}')
         return True
     except subprocess.CalledProcessError as e:
-        logging.error(f'Killing result:{e.stderr}')
+        logging.warning(f'Killing result:{e.stderr}')
         return False
 
 
