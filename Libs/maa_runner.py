@@ -55,7 +55,7 @@ def get_report(result):
             else:
                 return '{} ×: \n{}'.format(task_id, get_maa_tasks_str(task_result['exec_result']['maatasks']))
         else:
-            return '{} ×: \n{}'.format(task_id, 'Task failed to run')
+            return '{} ×: {}'.format(task_id, 'Task failed to run')
 
     [task_strs.append(get_task_str(task_name)) for task_name in result]
     task_strs = '\n'.join(task_strs)
