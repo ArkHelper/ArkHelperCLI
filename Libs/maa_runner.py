@@ -9,10 +9,11 @@ import logging
 import time
 import copy
 import multiprocessing
+from dataclasses import dataclass
+from urllib.parse import quote
 
 
 def do_conclusion():
-    # TODO: using task running result
     file_name = r'%y-%m-%d-%H-%M-%S.json'
     file_name = var.start_time.strftime(file_name)
 
@@ -33,6 +34,68 @@ def do_conclusion():
     write_json(file, conclusion)
 
 
+def get_report(result):
+    task_strs = []
+
+    def get_task_str(task_result):
+        def get_maa_tasks_str(maatasks):
+            maat_strs = []
+            for maatask in maatasks:
+                maatask_name = maatask['type']
+                if maatask['exec_result']['succeed']:
+                    maat_strs.append('    {} √'.format(maatask_name))
+                else:
+                    maat_strs.append('    {} ×: {}'.format(maatask_name, '\n'.join(maatask['exec_result']['reason'])))
+            return '\n'.join(maat_strs)
+
+        task_id = task_result['task']
+        if task_result['exec_result']['succeed']:
+            return '{} √'.format(task_id)
+        else:
+            return '{} ×: \n{}'.format(task_id, get_maa_tasks_str(task_result['exec_result']['maatasks']))
+
+    [task_strs.append(get_task_str(task)) for task in result]
+    task_strs = '\n'.join(task_strs)
+    return \
+        f"""ArkHelperCLI has finished all of the tasks
+{var.start_time.strftime('%Y-%m-%d %H:%M:%S')} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+{task_strs}"""
+
+
+def web_hook(report):
+    def replace_var(text: str, exec_quote=False) -> str:
+        def replace_escape(es: str) -> str:
+            es = es.replace('\n', '\\n').replace('\t', '\\t').replace('\r', '\\r')
+            if exec_quote:
+                es = quote(es)
+            return es
+
+        replace_list = [
+            ('#{report}', report)
+        ] # add replacer in it to support more builtin vars
+        for origin, after in replace_list:
+            text = text.replace(origin, replace_escape(after))
+        return text
+
+    for webhook_config in var.global_config.get('webhook', []):
+        webhook_method = webhook_config['method']
+        webhook_request_body = replace_var(webhook_config['request_body']).encode()
+        webhook_url = replace_var(webhook_config['url'], exec_quote=True)
+        webhook_headers = webhook_config['headers']
+
+        try:
+            logging.debug(f'Start to webhook to {webhook_url}')
+            webhook_response = requests.request(webhook_method, webhook_url, data=webhook_request_body, headers=webhook_headers)
+            webhook_result = f'Webhook to {webhook_url}: {webhook_response.status_code}\n{webhook_response.text}'
+            if webhook_response.ok:
+                logging.debug(webhook_result)
+            else:
+                logging.warning(webhook_result)
+        except Exception as e:
+            logging.error(f'Webhook to {webhook_url}: {e}')
+
+
 def run():
     update_nav()
     if var.global_config.get('restart_adb', False):
@@ -40,32 +103,41 @@ def run():
         exec_adb_cmd('start-server')
     # kill_all_emulators()
 
+    @dataclass
+    class DeviceStatus:
+        device: Device
+        process: multiprocessing.Process | None
+        process_static_params: dict | None
+        process_shared_status: dict | None
+
     [var.tasks.append(get_full_task(personal_config)) for personal_config in var.personal_configs]
     devices = [Device(dev_config) for dev_config in var.global_config['devices']]
-    task_statuses: list[list[Device, multiprocessing.Process, dict, dict]] = [[_device, None, None, None] for _device in devices]
+    statuses: list[DeviceStatus] = [DeviceStatus(_device, None, None, None) for _device in devices]
+    running_result = []
 
     while True:
         ended_dev = []
-        for task_status in task_statuses:
-            logger = task_status[0].logger
+        for status in statuses:
+            logger = status.device.logger
 
-            if task_status[1] != None:
-                if not task_status[1].is_alive():
-                    logger.debug(f'TaskProcess {task_status[2]["task"]["hash"]} ended, ready to clear')
-                    task_status[1] = None
-                    task_status[2] = None
-                    task_status[3] = None
+            if status.process != None:
+                if not status.process.is_alive():
+                    logger.debug(f'TaskProcess {status.process_static_params["task"]["hash"]} ended, ready to clear')
+                    running_result.append(status.process_shared_status['result'])
+                    status.process = None
+                    status.process_static_params = None
+                    status.process_shared_status = None
 
-            if task_status[1] == None:
+            if status.process == None:
                 logger.debug(f'Process is None, ready to distribute task')
 
                 def no_task():
                     logger.debug(f'No task to distribute. Ended')
-                    task_status[0].kill()
-                    ended_dev.append(task_status[0])
+                    status.device.kill()
+                    ended_dev.append(status.device)
                 if var.tasks:
                     distribute_task = (
-                        [task for task in var.tasks if task.get('device') == task_status[0].alias] or
+                        [task for task in var.tasks if task.get('device') == status.device.alias] or
                         [task for task in var.tasks if task.get('device') is None] or
                         [None]
                     )[0]
@@ -74,14 +146,14 @@ def run():
                         var.tasks.remove(distribute_task)
                         process_static_params = {
                             'task': distribute_task,
-                            'device': task_status[0]
+                            'device': status.device
                         }
                         process_shared_status = multiprocessing.Manager().dict()
                         process = multiprocessing.Process(target=start_task_process, args=(process_static_params, process_shared_status, ))
 
-                        task_status[1] = process
-                        task_status[2] = process_static_params
-                        task_status[3] = process_shared_status
+                        status.process = process
+                        status.process_static_params = process_static_params
+                        status.process_shared_status = process_shared_status
 
                         logger.debug(f'Ready to start a task process(task={distribute_task["hash"]})')
                         process.start()
@@ -96,7 +168,7 @@ def run():
         else:
             time.sleep(2)
 
-    do_conclusion()
+    web_hook(get_report(running_result))
 
 
 def get_full_task(config):
@@ -132,16 +204,16 @@ def get_full_task(config):
                     return start_time_obj <= current_time_obj <= end_time_obj
 
                 def date_between(date_start, date_end):
-                    current_date = datetime.now().strftime('%Y/%m/%d')
-                    start_date_obj = datetime.strptime(date_start, '%Y/%m/%d')
-                    end_date_obj = datetime.strptime(date_end, '%Y/%m/%d')
-                    current_date_obj = datetime.strptime(current_date, '%Y/%m/%d')
+                    current_date = datetime.now().strftime('%Y-%m-%d')
+                    start_date_obj = datetime.strptime(date_start, '%Y-%m-%d')
+                    end_date_obj = datetime.strptime(date_end, '%Y-%m-%d')
+                    current_date_obj = datetime.strptime(current_date, '%Y-%m-%d')
                     return start_date_obj <= current_date_obj <= end_date_obj
 
                 def datetime_between(datetime_start, datetime_end):
                     current_datetime = datetime.now()
-                    start_datetime_obj = datetime.strptime(datetime_start, '%Y/%m/%d-%H:%M:%S')
-                    end_datetime_obj = datetime.strptime(datetime_end, '%Y/%m/%d-%H:%M:%S')
+                    start_datetime_obj = datetime.strptime(datetime_start, '%Y-%m-%d %H:%M:%S')
+                    end_datetime_obj = datetime.strptime(datetime_end, '%Y-%m-%d %H:%M:%S')
                     return start_datetime_obj <= current_datetime <= end_datetime_obj
 
                 AM = in_game_time(datetime.now(), server).hour < 12  # in gametime

@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import multiprocessing
 import os
 import pathlib
@@ -23,6 +24,7 @@ class Device:
         self.logger = logging.getLogger(str(self))
         self.current_status = multiprocessing.Manager().dict()
         self.current_status['server'] = None
+
         self.logger.debug(f'{self} inited')
 
     def __str__(self) -> str:
@@ -137,7 +139,7 @@ class AsstProxy:
             self.current_maatask_status = (msg, details, arg)
             self._logger.debug(f'current_maatask_status turned to {self.current_maatask_status} according to callback')
 
-    def run_maatask(self, maatask, time_remain) -> dict:
+    def run_maatask(self, maatask, time_remain) -> 'MaataskRunResult':
         type = maatask['task_name']
         config = maatask['task_config']
         self._logger.info(f'Start maatask {type}, time {time_remain} sec')
@@ -191,31 +193,45 @@ class AsstProxy:
         status_ok = status_message == Message.TaskChainCompleted
         time_ok = time_remain >= 0
         succeed = status_ok and time_ok
-        if succeed:
-            reason = status_message.name
-        else:
-            reason = ''
-            if status_message == Message.TaskChainError:
-                reason = status_message.name
-            if not time_ok:
-                reason = 'Timeout'
+        reason = [status_message.name]
+        if not time_ok:
+            reason.append('Timeout')
+        reason_str = ','.join(reason)
 
         self._logger.debug(f'Status={status_message}, time_remain={time_remain}')
         if succeed:
-            self._logger.info(f'Maatask {type} ended successfully beacuse of {reason}')
+            self._logger.info(f'Maatask {type} ended successfully beacuse of {reason_str}')
         else:
-            self._logger.warning(f'Maatask {type} ended in failure beacuse of {reason}')
-        return {
-            'exec_result': {
-                'succeed': succeed,
-                'reason': reason,
-                'tried_times': i+1
-            },
-            'time_remain': time_remain
-        }
+            self._logger.warning(f'Maatask {type} ended in failure beacuse of {reason_str}')
+        return MaataskRunResult(type, succeed, reason, i+1, time_remain)
 
     def __str__(self) -> str:
         return f'asstproxy({self._proxy_id})'
 
     def __del__(self):
         del self.asst
+
+
+class MaataskRunResult:
+    @dataclass
+    class MaataskExecResult:
+        succeed: str
+        reason: str
+        tried_times: int
+        pass
+
+    def __init__(self, type, succeed, reason, tried_times, time_remain) -> None:
+        self.type = type
+        self.exec_result = MaataskRunResult.MaataskExecResult(succeed, reason, tried_times)
+        self.time_remain = time_remain
+
+    def dict(self):
+        return {
+            'type': self.type,
+            'exec_result': {
+                'succeed': self.exec_result.succeed,
+                'reason': self.exec_result.reason,
+                'tried_times': self.exec_result.tried_times
+            },
+            'time_remain': self.time_remain
+        }
