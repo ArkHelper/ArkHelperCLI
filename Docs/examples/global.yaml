@@ -14,7 +14,7 @@ devices:
       - MuMuPlayer.exe
 webhook:
   - method: POST
-    url: http://your.domain.or.url:1234/send_private_msg
+    url: http://your.host.or.ip:1234/send_private_msg
     request_body: # built-in variable is available. So do url. Including:
                   # #{report} : report text after the end of run
     >
