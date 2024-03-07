@@ -106,7 +106,7 @@ class AsstProxy:
         self._logger.debug(f'Asst resource and lib loaded from incremental path {incr}')
 
     def connect(self):
-        # TODO: kill_start() only when adb can't connect to emulator
+        # TODO?: kill_start() only when adb can't connect to emulator
         # _execed_start = False
 
         self.device.kill_start()
@@ -117,7 +117,7 @@ class AsstProxy:
 
             if self.asst.connect(self.device._adb, self.device._addr):
                 self._logger.debug(f'Connected to emulator')
-                break
+                return
             else:
                 self._logger.debug(f'Connect failed')
 
@@ -126,6 +126,7 @@ class AsstProxy:
             #    _execed_start = True
 
             time.sleep(2)
+        raise Exception('Connect emulator trying times reached the maximum')
 
     def add_maatask(self, maatask):
         self._logger.debug(f'Ready to append task {maatask} to {self}')
