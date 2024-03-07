@@ -34,7 +34,7 @@ class Device:
     def _addr(self) -> str:
         return f'{self._host}:{self._port}'
 
-    def exec_adb(self, cmd: str):
+    def exec_adb_cmd(self, cmd: str):
         exec_adb_cmd(cmd, self._addr)
 
     def kill_start(self):
@@ -188,7 +188,7 @@ class AsstProxy:
                 self._logger.debug(f'current_maatask_status={self.current_maatask_status}')
                 if self.current_maatask_status[0] == Message.TaskChainError:
                     if type == "StartUp":
-                        self.device.exec_adb(f'shell am force-stop {arknights_package_name[self.device.current_status["server"]]}')
+                        self.device.exec_adb_cmd(f'shell am force-stop {arknights_package_name[self.device.current_status["server"]]}')
                     continue
                 elif self.current_maatask_status[0] == Message.TaskChainStopped:
                     break
