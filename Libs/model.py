@@ -127,9 +127,11 @@ class AsstProxy:
 
             time.sleep(2)
 
-    def add_maatask(self, maatask):
-        self._logger.debug(f'Ready to append task {maatask} to {self}')
-        self.asst.append_task(maatask['task_name'], maatask['task_config'])
+    def add_maatask(self, task_name, task_config):
+        self._logger.debug(f'Ready to append task {task_name} to {self}')
+        append_result = self.asst.append_task(task_name, task_config)
+        if append_result == 0:
+            raise Exception(f'Failed to add task {task_name}')
 
     def add_maatasks(self, task):
         for maatask in task['task']:
@@ -143,7 +145,7 @@ class AsstProxy:
 
     def run_maatask(self, maatask, time_remain) -> 'MaataskRunResult':
         type = maatask['task_name']
-        config = maatask['task_config']
+        config = maatask['task_config'].copy()
         self._logger.info(f'Start maatask {type}, time {time_remain} sec')
 
         i = 0
@@ -159,36 +161,40 @@ class AsstProxy:
         for i in range(max_try_time):
             self._logger.info(f'Maatask {type} {i+1}st/{max_try_time}max trying')
 
-            if type == 'Fight':
-                if i == 0:
-                    maatask['task_config']['stage'] = stage
-                else:
-                    maatask['task_config']['stage'] = standby_stage
+            try:
+                if type == 'Fight':
+                    if i == 0:
+                        config['stage'] = stage
+                    else:
+                        config['stage'] = standby_stage
 
-            self.add_maatask(maatask)
-            self.asst.start()
-            self._logger.debug('Asst start invoked')
-            asst_stop_invoked = False
-            interval = 5
-            while self.asst.running():
-                time.sleep(interval)
-                time_remain -= interval
-                if time_remain < 0:
-                    if not asst_stop_invoked and type != 'Fight':
-                        self._logger.warning(f'Task time remains {time_remain}')
-                        self.asst.stop()
-                        self._logger.debug(f'Asst stop invoked')
-                        asst_stop_invoked = True
-            self._logger.debug(f'Asst running status ended')
-            self._logger.debug(f'current_maatask_status={self.current_maatask_status}')
-            if self.current_maatask_status[0] == Message.TaskChainError:
-                if type == "StartUp":
-                    self.device.exec_adb(f'shell am force-stop {arknights_package_name[self.device.current_status["server"]]}')
-                continue
-            elif self.current_maatask_status[0] == Message.TaskChainStopped:
-                break
-            else:
-                break
+                self.add_maatask(type, config)
+                if not self.asst.start():
+                    raise Exception('Failed to start maa')
+                self._logger.debug('Asst start invoked')
+                asst_stop_invoked = False
+                interval = 5
+                while self.asst.running():
+                    time.sleep(interval)
+                    time_remain -= interval
+                    if time_remain < 0:
+                        if not asst_stop_invoked and type != 'Fight':
+                            self._logger.warning(f'Task time remains {time_remain}')
+                            self.asst.stop()
+                            self._logger.debug(f'Asst stop invoked')
+                            asst_stop_invoked = True
+                self._logger.debug(f'Asst running status ended')
+                self._logger.debug(f'current_maatask_status={self.current_maatask_status}')
+                if self.current_maatask_status[0] == Message.TaskChainError:
+                    if type == "StartUp":
+                        self.device.exec_adb(f'shell am force-stop {arknights_package_name[self.device.current_status["server"]]}')
+                    continue
+                elif self.current_maatask_status[0] == Message.TaskChainStopped:
+                    break
+                else:
+                    break
+            except Exception as e:
+                self._logger.info(f'Maatask {type} {i+1}st/{max_try_time}max trying failed: {e}')
 
         self._logger.debug(f'Maatask {type} ended')
         status_message = self.current_maatask_status[0]
