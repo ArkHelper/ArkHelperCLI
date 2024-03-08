@@ -55,6 +55,15 @@ def start_task_process(process_static_params, process_shared_status):
                 device.adb.exec_adb_cmd(f'shell am force-stop {arknights_package_name[device.current_status["server"]]}')
             device.current_status['server'] = task_server
 
+        if task_server == 'Official':
+            newest_link = requests.get('https://ak.hypergryph.com/downloads/android_lastest', allow_redirects=False).headers['Location']
+            newest_version = newest_link.split('/')[-1].replace('.apk', '').split('-')[-1]
+            local_version = device.adb.get_game_version(task_server).replace('.', '')
+            if newest_version != local_version:
+                download_to = var.cache_path / f'arknights_{task_server}_{newest_version}_{int(time.time())}.apk'
+                download(newest_link, download_to)
+                device.adb.install(download_to)
+
         remain_time = var.global_config.get('max_task_waiting_time', 3600)
         execute, execute_disabled_by = True, ''
         for maatask in task['task']:

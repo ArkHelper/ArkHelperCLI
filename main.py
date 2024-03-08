@@ -11,6 +11,7 @@ var.data_path = var.cli_env / 'Data'
 var.config_path = var.data_path / 'Config'
 var.log_path = var.data_path / 'Log'
 var.static_path = var.data_path / 'Static'
+var.cache_path = var.data_path / 'Cache'
 
 var.global_config = read_config('global')
 var.personal_configs = read_config('personal')

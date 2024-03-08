@@ -15,8 +15,7 @@ import colorlog
 from typing import Callable
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
-from line_profiler import LineProfiler
-from Libs.model import Device  # do not remove this. It's needed by main.py, passing by import *
+from line_profiler import LineProfiler # do not remove this. It's needed by main.py, passing by import *
 
 import var
 
@@ -26,6 +25,7 @@ def mk_CLI_dir():
     var.config_path.mkdir(exist_ok=True)
     var.log_path.mkdir(exist_ok=True)
     var.static_path.mkdir(exist_ok=True)
+    var.cache_path.mkdir(exist_ok=True)
     var.maa_usrdir_path.mkdir(exist_ok=True)
 
 
@@ -404,3 +404,14 @@ def run_in_thread(func: Callable, args: tuple, max_try_time=5, timeout=10, logge
             return True
 
     return False
+
+
+def download(url, path):
+    path = str(path)
+    response = requests.get(url)
+    if response.status_code == 200:
+        with open(path, 'wb') as file:
+            file.write(response.content)
+        return path
+    else:
+        raise Exception(f'Download failed: {response.status_code}')

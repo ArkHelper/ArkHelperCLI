@@ -102,8 +102,7 @@ def web_hook(report):
 def run():
     update_nav()
     if var.global_config.get('restart_adb', False):
-        ADB().exec_adb_cmd('kill-server')
-        ADB().exec_adb_cmd('start-server')
+        ADB().exec_adb_cmd(['kill-server', 'start-server'])
     # kill_all_emulators()
 
     @dataclass

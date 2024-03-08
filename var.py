@@ -6,6 +6,7 @@ data_path: Path
 config_path: Path
 log_path: Path
 static_path: Path
+cache_path: Path
 maa_env: Path
 maa_usrdir_path:Path
 

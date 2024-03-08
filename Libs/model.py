@@ -6,23 +6,29 @@ import threading
 import time
 import logging
 import json
-from typing import Optional, Union
+from typing import Optional, Union, TypeVar
 
+import var
 from Libs.MAA.asst.asst import Asst
 from Libs.MAA.asst.utils import Message
 from Libs.utils import *
 
+T = TypeVar('T', str, list[str])
+
 
 class ADB:
-    def __init__(self, device: Device | str = None) -> None:
-        self.device = None
-        if device:
-            if type(device) == Device:
-                self.device = device.addr
-            else:
-                self.device = device
+    def __init__(self, device: str = None) -> None:
+        self.device = device
 
-    def exec_adb_cmd(self, cmd):
+    def exec_adb_cmd(self, cmd: T) -> T:
+        type_of_cmd = type(cmd)
+
+        if type_of_cmd == str:
+            return self._exec_adb_cmd(cmd)
+        if type_of_cmd == list:
+            return [self._exec_adb_cmd(c) for c in cmd]
+
+    def _exec_adb_cmd(self, cmd):
         device = self.device
         final_cmd = var.global_config['adb_path']
         if device:
@@ -55,6 +61,9 @@ class ADB:
         result = self.exec_adb_cmd(f'shell "pm dump {package_name} | grep versionName"')
 
         return result.replace(' ', '').replace('versionName=', '').replace('\r\n', '')
+
+    def install(self, path):
+        self.exec_adb_cmd(f'install {path}')
 
 
 class Device:
