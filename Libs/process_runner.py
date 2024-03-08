@@ -63,6 +63,8 @@ def start_task_process(process_static_params, process_shared_status):
                 download_to = var.cache_path / f'arknights_{task_server}_{newest_version}_{int(time.time())}.apk'
                 download(newest_link, download_to)
                 device.adb.install(download_to)
+                download_to.unlink(True)
+                logger.info('Arknights client has been successfully updated')
 
         remain_time = var.global_config.get('max_task_waiting_time', 3600)
         execute, execute_disabled_by = True, ''
