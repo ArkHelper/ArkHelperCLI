@@ -220,6 +220,7 @@ def get_full_task(config):
                     return start_datetime_obj <= current_datetime <= end_datetime_obj
 
                 AM = in_game_time(datetime.now(), server).hour < 12  # in gametime
+                weekday = datetime.now().weekday()
                 # excuted_time_in_cur_gameday =
 
                 if type(config) == list:

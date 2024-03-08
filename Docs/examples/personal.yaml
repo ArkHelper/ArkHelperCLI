@@ -16,7 +16,7 @@
           - condition: AM # The condition field should be a python expression that calculates a boolean value (default is True).
                           # Built in field is:
                           # AM (a boolean indications is AM in gametime) 
-                          # Weekday (day of the week, where Monday == 0 ... Sunday == 6)
+                          # weekday (day of the week, where Monday == 0 ... Sunday == 6)
                           # and built in methods are: 
                           # time_between(start,end)(format: '1:23:45'),
                           # date_between(start,end)(format: '2022-02-02'),
