@@ -13,3 +13,6 @@
 ArkHelperCLI config is divided into three parts: [default_personal.yaml](/Docs/examples/default_personal.yaml), [global.yaml](/Docs/examples/global.yaml), [personal.yaml](/Docs/examples/personal.yaml).  
 `default_personal.yaml` is a templete. Each task configuration configured in `personal.yaml` will be automatically generated from the template.  
 Check the examples by clicking the link.
+
+## License
+[AGPL3.0](https://www.gnu.org/licenses/agpl.txt)
