@@ -52,7 +52,7 @@ def start_task_process(process_static_params, process_shared_status):
 
         if device.current_status['server'] != task_server:
             if device.current_status['server']:
-                device.exec_adb_cmd(f'shell am force-stop {arknights_package_name[device.current_status["server"]]}')
+                device.adb.exec_adb_cmd(f'shell am force-stop {arknights_package_name[device.current_status["server"]]}')
             device.current_status['server'] = task_server
 
         remain_time = var.global_config.get('max_task_waiting_time', 3600)

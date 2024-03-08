@@ -1,6 +1,6 @@
 import var
 from Libs.utils import *
-from Libs.model import Device
+from Libs.model import *
 from Libs.process_runner import start_task_process
 from Libs.task_planner import *
 
@@ -102,8 +102,8 @@ def web_hook(report):
 def run():
     update_nav()
     if var.global_config.get('restart_adb', False):
-        exec_adb_cmd('kill-server')
-        exec_adb_cmd('start-server')
+        ADB().exec_adb_cmd('kill-server')
+        ADB().exec_adb_cmd('start-server')
     # kill_all_emulators()
 
     @dataclass

@@ -13,6 +13,50 @@ from Libs.MAA.asst.utils import Message
 from Libs.utils import *
 
 
+class ADB:
+    def __init__(self, device: Device | str = None) -> None:
+        self.device = None
+        if device:
+            if type(device) == Device:
+                self.device = device.addr
+            else:
+                self.device = device
+
+    def exec_adb_cmd(self, cmd):
+        device = self.device
+        final_cmd = var.global_config['adb_path']
+        if device:
+            final_cmd += f' -s {str(device)}'
+        final_cmd += f' {cmd}'
+
+        logging.debug(f'Execing adb cmd: {final_cmd}')
+        proc = subprocess.Popen(
+            final_cmd,
+            stdin=None,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=True)
+        outinfo, errinfo = proc.communicate()
+        try:
+            outinfo = outinfo.decode('utf-8')
+        except:
+            outinfo = outinfo.decode('gbk')
+        try:
+            errinfo = errinfo.decode('utf-8')
+        except:
+            errinfo = errinfo.decode('gbk')
+
+        result = outinfo + errinfo
+        logging.debug(f'adb output: \n{result}')
+        return result
+
+    def get_game_version(self, game_type):
+        package_name = arknights_package_name[game_type]
+        result = self.exec_adb_cmd(f'shell "pm dump {package_name} | grep versionName"')
+
+        return result.replace(' ', '').replace('versionName=', '').replace('\r\n', '')
+
+
 class Device:
     def __init__(self, dev_config) -> None:
         self._adb = var.global_config['adb_path']
@@ -24,18 +68,16 @@ class Device:
         self.logger = logging.getLogger(str(self))
         self.current_status = multiprocessing.Manager().dict()
         self.current_status['server'] = None
+        self.adb = ADB(self.addr)
 
         self.logger.debug(f'{self} inited')
 
     def __str__(self) -> str:
-        return f'{self.alias}({self._addr})'
+        return f'{self.alias}({self.addr})'
 
     @property
-    def _addr(self) -> str:
+    def addr(self) -> str:
         return f'{self._host}:{self._port}'
-
-    def exec_adb_cmd(self, cmd: str):
-        exec_adb_cmd(cmd, self._addr)
 
     def kill_start(self):
         if self._path is not None:
@@ -115,7 +157,7 @@ class AsstProxy:
         for tried_time in range(max_try_time):
             self._logger.debug(f'Connect emulator {tried_time}st/{max_try_time}trying')
 
-            if self.asst.connect(self.device._adb, self.device._addr):
+            if self.asst.connect(self.device._adb, self.device.addr):
                 self._logger.debug(f'Connected to emulator')
                 return
             else:
@@ -188,7 +230,7 @@ class AsstProxy:
                 self._logger.debug(f'current_maatask_status={self.current_maatask_status}')
                 if self.current_maatask_status[0] == Message.TaskChainError:
                     if type == "StartUp":
-                        self.device.exec_adb_cmd(f'shell am force-stop {arknights_package_name[self.device.current_status["server"]]}')
+                        self.device.adb.exec_adb_cmd(f'shell am force-stop {arknights_package_name[self.device.current_status["server"]]}')
                     continue
                 elif self.current_maatask_status[0] == Message.TaskChainStopped:
                     break

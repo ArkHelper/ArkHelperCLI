@@ -15,7 +15,8 @@ import colorlog
 from typing import Callable
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
-from line_profiler import LineProfiler  # do not remove this. It's needed by main.py, passing by import *
+from line_profiler import LineProfiler
+from Libs.model import Device  # do not remove this. It's needed by main.py, passing by import *
 
 import var
 
@@ -64,41 +65,6 @@ def get_process_info(pid):
         return process
     except psutil.NoSuchProcess as e:
         logging.error(f'Get process failed: {e}')
-
-
-def get_game_version(game_type, device=None):
-    package_name = arknights_package_name[game_type]
-    result = exec_adb_cmd(f'shell "pm dump {package_name} | grep versionName"', device)
-
-    return result.replace(' ','').replace('versionName=','').replace('\r\n','')
-
-
-def exec_adb_cmd(cmd, device=None):
-    final_cmd = var.global_config['adb_path']
-    if device:
-        final_cmd += f' -s {str(device)}'
-    final_cmd += f' {cmd}'
-
-    logging.debug(f'Execing adb cmd: {final_cmd}')
-    proc = subprocess.Popen(
-        final_cmd,
-        stdin=None,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        shell=True)
-    outinfo, errinfo = proc.communicate()
-    try:
-        outinfo = outinfo.decode('utf-8')
-    except:
-        outinfo = outinfo.decode('gbk')
-    try:
-        errinfo = errinfo.decode('utf-8')
-    except:
-        errinfo = errinfo.decode('gbk')
-
-    result = outinfo + errinfo
-    logging.debug(f'adb output: \n{result}')
-    return result
 
 
 def parse_arg():
