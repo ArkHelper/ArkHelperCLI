@@ -4,3 +4,4 @@ pytz
 requests
 colorlog
 line_profiler
+indent-concluder==0.1

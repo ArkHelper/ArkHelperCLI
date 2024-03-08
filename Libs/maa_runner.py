@@ -11,6 +11,7 @@ import copy
 import multiprocessing
 from dataclasses import dataclass
 from urllib.parse import quote
+from indent_concluder import Item as ConcluderItem
 
 
 def do_conclusion():
@@ -35,35 +36,24 @@ def do_conclusion():
 
 
 def get_report(result):
-    task_strs = []
-
-    def get_task_str(task_id):
-        def get_maa_tasks_str(maatasks):
-            maat_strs = []
-            for maatask in maatasks:
-                maatask_name = maatask['type']
-                if maatask['exec_result']['succeed']:
-                    maat_strs.append('    {} √'.format(maatask_name))
-                else:
-                    maat_strs.append('    {} ×: {}'.format(maatask_name, '\n'.join(maatask['exec_result']['reason'])))
-            return '\n'.join(maat_strs)
-
+    conclusion_item = []
+    for task_id in result:
         task_result = result[task_id]
+        item = None
         if task_result:
-            if task_result['exec_result']['succeed']:
-                return '{} √'.format(task_id)
-            else:
-                return '{} ×: \n{}'.format(task_id, get_maa_tasks_str(task_result['exec_result']['maatasks']))
+            item = ConcluderItem(task_id, task_result['exec_result']['succeed'], '')
+            for maatask in task_result['exec_result']['maatasks']:
+                item.append(ConcluderItem(maatask['type'], maatask['exec_result']['succeed'], '\n'.join(maatask['exec_result']['reason'])))
         else:
-            return '{} ×: {}'.format(task_id, 'Task failed to run')
+            item = ConcluderItem(task_id, False, 'Task failed to run')
+        conclusion_item.append(item)
+    conclusion_item = '\n'.join([str(i) for i in conclusion_item])
 
-    [task_strs.append(get_task_str(task_name)) for task_name in result]
-    task_strs = '\n'.join(task_strs)
     return \
         f"""ArkHelperCLI has finished all of the tasks
 {var.start_time.strftime('%Y-%m-%d %H:%M:%S')} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 
-{task_strs}"""
+{conclusion_item}"""
 
 
 def web_hook(report):
@@ -116,6 +106,8 @@ def run():
     devices = [Device(dev_config) for dev_config in var.global_config['devices']]
     statuses: list[DeviceStatus] = [DeviceStatus(_device, None, None, None) for _device in devices]
     running_result = {task.get('hash'): None for task in var.tasks}
+
+    ...
 
     while True:
         ended_dev = []
