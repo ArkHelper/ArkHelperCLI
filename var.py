@@ -12,7 +12,7 @@ maa_usrdir_path:Path
 
 global_config: dict
 personal_configs: list[dict]
-default_personal_config: dict
+config_templates: dict[dict]
 
 tasks: list[dict]
 

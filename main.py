@@ -15,7 +15,7 @@ var.cache_path = var.data_path / 'Cache'
 
 var.global_config = read_config('global')
 var.personal_configs = read_config('personal')
-var.default_personal_config = read_config('default_personal')
+var.config_templates = get_config_templates()
 var.tasks = []
 var.maa_env = Path(var.global_config['maa_path'])
 var.maa_usrdir_path = var.maa_env / f'userdir'
@@ -29,7 +29,7 @@ if __name__ == '__main__':
     logging.info(f'CLI started up at {var.cli_env}')
     logging.debug(f'With MAA {var.maa_env}')
     logging.debug(f'With global config {var.global_config}')
-    logging.debug(f'With default personal config {var.default_personal_config}')
+    logging.debug(f'With config templates {var.config_templates}')
     logging.debug(f'With personal config {var.personal_configs}')
 
     try:

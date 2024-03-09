@@ -1,3 +1,4 @@
+import os
 import ctypes
 import hashlib
 import json
@@ -15,7 +16,7 @@ import colorlog
 from typing import Callable
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
-from line_profiler import LineProfiler # do not remove this. It's needed by main.py, passing by import *
+from line_profiler import LineProfiler  # do not remove this. It's needed by main.py, passing by import *
 
 import var
 
@@ -35,6 +36,22 @@ def convert_str_to_legal_filename_windows(filename):
         if not char in ['\\', '/', ':', '*', '?', '\"', '<', '>', '|']:
             end += char
     return end
+
+
+def walk_dir(path):
+    result = []
+    for home, dirs, files in os.walk(path):
+        for filename in files:
+            result.append(filename)
+    return result
+
+
+def get_config_templates():
+    result = {}
+    for file in walk_dir(var.config_path):
+        if file.startswith('template_'):
+            result.setdefault(file.replace('.yml', '').replace('.yaml', '').replace('template_', ''), read_yaml(var.config_path / file))
+    return result
 
 
 def is_process_running(process_name):
