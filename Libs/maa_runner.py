@@ -37,9 +37,7 @@ def do_conclusion():
 
 def get_report(result):
     conclusion_item = []
-    for task_id in result:
-        task_result = result[task_id]
-        item = None
+    for task_id, task_result in result.items():
         if task_result:
             item = ConcluderItem(task_id, task_result['exec_result']['succeed'], '')
             for maatask in task_result['exec_result']['maatasks']:
