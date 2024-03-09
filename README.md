@@ -1,5 +1,5 @@
 # ArkHelperCLI
-An arknights helper based on [MAA Core](github.com/MaaAssistantArknights/MaaAssistantArknights)，easily run MAA tasks in batches.
+An Arknights helper based on [MAA Core](https://github.com/MaaAssistantArknights/MaaAssistantArknights)，easily run MAA tasks in batches.
 
 ## deploy/dev
 1. ``` git clone https://github.com/ArkHelper/ArkHelperCLI ```  
