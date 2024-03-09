@@ -66,7 +66,7 @@ def web_hook(report):
 
         replace_list = [
             ('#{report}', report)
-        ]  # add replacer in it to support more builtin vars
+        ]  # Add a switch to it to support more built-in variables
         for origin, after in replace_list:
             text = text.replace(origin, replace_escape(after))
         return text
