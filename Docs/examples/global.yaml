@@ -9,7 +9,7 @@ devices:
     process_name: mumu # Accept a string or a list. A string means using internal logic of killing and starting. It is recommended to use this method.
   - alias: mumu1
     emulator_address: 127.0.0.1:16416
-    start_path: ./../mumu1.lnk # both absolute and relative is ok for a path
+    start_path: ./../mumu1.lnk # both absolute and relative is ok for a path. For relative path, ./ = main.py/../
     process_name: # Accept a string or a list. A list means killing all processes in it. 
       - MuMuVMMHeadless.exe
       - MuMuPlayer.exe
