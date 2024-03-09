@@ -13,7 +13,7 @@ devices:
     process_name: # Accept a string or a list. A list means killing all processes in it. 
       - MuMuVMMHeadless.exe
       - MuMuPlayer.exe
-task-device: # Use a unique identifier to match the device corresponding to the task
+task-device: # Use unique identifier(rules in personal.yaml) to match the device corresponding to the task
   Official4567: mumu
   YoStarEN: mumu
 webhook: # optional
