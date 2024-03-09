@@ -163,7 +163,7 @@ def get_logging_handlers():
 
 
 def kill_processes_by_name(process_name) -> bool:
-    logging.info(f'killing process {process_name}')
+    logging.debug(f'killing process {process_name}')
     try:
         result = subprocess.run(['taskkill', '/F', '/IM', f'{process_name}'], check=True, capture_output=True, text=True)
         logging.debug(f'killing result:{result.stdout}')
@@ -174,7 +174,7 @@ def kill_processes_by_name(process_name) -> bool:
 
 
 def kill_processes_by_pid(pid) -> bool:
-    logging.info(f'killing process {pid}')
+    logging.debug(f'killing process {pid}')
     try:
         result = subprocess.run(['taskkill', '/F', '/PID', f'{pid}'], check=True, capture_output=True, text=True)
         logging.debug(f'Killing result:{result.stdout}')
