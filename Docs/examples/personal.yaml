@@ -3,7 +3,7 @@
     - task_name: StartUp
       task_config:
         client_type: Official
-        account_name: 123****4567
+        account_name: "4567"
     - task_name: Fight
       task_config:
         stage: "" # The stage field accepts a string or a list. If it is a string, the specified content will be passed directly into MAA.
@@ -23,8 +23,7 @@
                           # datetime_between(start,end)(format: '2022-02-02 1:23:45')
             config: true
           - config: false # CLI will ergodic the list and match the first case meets the condition.
-- device: mumu1 # A device specified in the global config can be specified to run
-  override:
+- override:
     - task_name: StartUp
       task_config:
         client_type: YoStarEN

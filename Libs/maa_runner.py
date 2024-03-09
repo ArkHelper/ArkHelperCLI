@@ -253,7 +253,7 @@ def get_full_task(config):
     task = {
         'hash': hash,
         'task': final_maatasks,
-        'device': config.get('device', None),
+        'device': var.global_config.get('task-device', {}).get(hash, None),
         'server': server,
         'account_name': account_name
     }
