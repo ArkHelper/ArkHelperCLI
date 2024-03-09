@@ -169,11 +169,11 @@ def get_full_task(config):
     overrides = config['override']
     server = ''
     account_name = ''
-    for default_task in var.default_personal_config:
-        default_task: dict
+    template_name = config.get('template','default')
 
-        final_task_config = copy.deepcopy(default_task['task_config'])
-        final_task_name = copy.deepcopy(default_task['task_name'])
+    for template in var.config_templates[template_name]:
+        final_task_config = copy.deepcopy(template['task_config'])
+        final_task_name = copy.deepcopy(template['task_name'])
 
         preference_task_config = \
             (
