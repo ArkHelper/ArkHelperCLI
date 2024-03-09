@@ -18,7 +18,7 @@ task-device: # Use unique identifier(rules in personal.yaml) to match the device
   YoStarEN: mumu
 webhook: # optional
   - method: POST
-    url: http://your.host.or.ip:1234/send_private_msg
+    url: http://your.url:1234/send_private_msg
     request_body: # built-in variable is available. So do url. Including:
                   # #{report} : report text after the end of run
     >
