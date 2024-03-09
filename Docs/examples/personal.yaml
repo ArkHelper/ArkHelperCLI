@@ -49,7 +49,7 @@
           S3-1: 5
           S3-3: 5
           3-7: 5
-- template: juststartup # You can choose a template. If you do not fill in this field, the default template is used by default.
+- template: juststartup # You can choose a template. If you do not fill in this field, the default template = default.
   override:
     - task_name: StartUp 
       task_config:
