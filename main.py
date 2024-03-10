@@ -5,7 +5,7 @@ from Libs.maa_runner import run
 
 mode, verbose = parse_arg()
 
-init_var(verbose=verbose)
+init_var(main_path=__file__, verbose=verbose)
 mk_CLI_dir()
 logging.basicConfig(level=logging.DEBUG, handlers=get_logging_handlers())
 

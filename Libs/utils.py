@@ -21,9 +21,9 @@ from line_profiler import LineProfiler  # do not remove this. It's needed by mai
 import var
 
 
-def init_var(verbose):
+def init_var(main_path, verbose):
     var.start_time = datetime.now()
-    var.cli_env = Path(__file__, '../')
+    var.cli_env = Path(main_path, '../')
     var.data_path = var.cli_env / 'Data'
     var.config_path = var.data_path / 'Config'
     var.log_path = var.data_path / 'Log'
