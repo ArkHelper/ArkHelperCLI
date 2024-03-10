@@ -41,7 +41,7 @@ def get_report(result):
         if task_result:
             item = ConcluderItem(task_id, task_result['exec_result']['succeed'], '')
             for maatask in task_result['exec_result']['maatasks']:
-                item.append(ConcluderItem(maatask['type'], maatask['exec_result']['succeed'], '\n'.join(maatask['exec_result']['reason'])))
+                item.append(ConcluderItem(maatask['type'], maatask['exec_result']['succeed'], ', '.join(maatask['exec_result']['reason'])))
         else:
             item = ConcluderItem(task_id, False, 'Task failed to run')
         conclusion_item.append(item)
