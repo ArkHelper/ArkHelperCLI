@@ -5,25 +5,9 @@ from Libs.maa_runner import run
 
 mode, verbose = parse_arg()
 
-var.start_time = datetime.now()
-var.cli_env = Path(__file__, '../')
-var.data_path = var.cli_env / 'Data'
-var.config_path = var.data_path / 'Config'
-var.log_path = var.data_path / 'Log'
-var.static_path = var.data_path / 'Static'
-var.cache_path = var.data_path / 'Cache'
-
-var.global_config = read_config('global')
-var.personal_configs = read_config('personal')
-var.config_templates = get_config_templates()
-var.tasks = []
-var.maa_env = Path(var.global_config['maa_path'])
-var.maa_usrdir_path = var.maa_env / f'userdir'
-var.verbose = verbose
-
+init_var(verbose=verbose)
 mk_CLI_dir()
-logging.basicConfig(level=logging.DEBUG,
-                    handlers=get_logging_handlers())
+logging.basicConfig(level=logging.DEBUG, handlers=get_logging_handlers())
 
 if __name__ == '__main__':
     logging.info(f'CLI started up at {var.cli_env}')

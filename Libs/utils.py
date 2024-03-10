@@ -21,6 +21,24 @@ from line_profiler import LineProfiler  # do not remove this. It's needed by mai
 import var
 
 
+def init_var(verbose):
+    var.start_time = datetime.now()
+    var.cli_env = Path(__file__, '../')
+    var.data_path = var.cli_env / 'Data'
+    var.config_path = var.data_path / 'Config'
+    var.log_path = var.data_path / 'Log'
+    var.static_path = var.data_path / 'Static'
+    var.cache_path = var.data_path / 'Cache'
+
+    var.global_config = read_config('global')
+    var.personal_configs = read_config('personal')
+    var.config_templates = get_config_templates()
+    var.tasks = []
+    var.maa_env = Path(var.global_config['maa_path'])
+    var.maa_usrdir_path = var.maa_env / f'userdir'
+    var.verbose = verbose
+
+
 def mk_CLI_dir():
     var.data_path.mkdir(exist_ok=True)
     var.config_path.mkdir(exist_ok=True)
