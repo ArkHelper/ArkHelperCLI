@@ -21,7 +21,7 @@ from line_profiler import LineProfiler  # do not remove this. It's needed by mai
 import var
 
 
-def init_var(main_path, verbose):
+def init(main_path, verbose):
     var.start_time = datetime.now()
     var.cli_env = Path(main_path, '../')
     var.data_path = var.cli_env / 'Data'
@@ -37,6 +37,8 @@ def init_var(main_path, verbose):
     var.maa_env = Path(var.global_config['maa_path'])
     var.maa_usrdir_path = var.maa_env / f'userdir'
     var.verbose = verbose
+
+    mk_CLI_dir()
 
 
 def mk_CLI_dir():
