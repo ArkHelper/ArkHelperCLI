@@ -275,7 +275,7 @@ def in_game_time(time, server='Official'):
     elif server in ('YoStarEN'):
         zone = pytz.timezone('GMT')
     else:
-        zone = pytz.timezone('GMT')
+        zone = pytz.timezone('Asia/Shanghai')
     return (time.astimezone(timezone.utc)-timedelta(hours=4)).replace(tzinfo=pytz.utc).astimezone(zone)
 
 

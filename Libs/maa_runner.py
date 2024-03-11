@@ -171,9 +171,10 @@ def get_full_task(config):
     account_name = ''
     template_name = config.get('template','default')
 
-    for template in var.config_templates[template_name]:
-        final_task_config = copy.deepcopy(template['task_config'])
-        final_task_name = copy.deepcopy(template['task_name'])
+    template = var.config_templates[template_name]
+    for maatask in template:
+        final_task_config = copy.deepcopy(maatask['task_config'])
+        final_task_name = copy.deepcopy(maatask['task_name'])
 
         preference_task_config = \
             (
@@ -209,7 +210,10 @@ def get_full_task(config):
                     end_datetime_obj = datetime.strptime(datetime_end, '%Y-%m-%d %H:%M:%S')
                     return start_datetime_obj <= current_datetime <= end_datetime_obj
 
-                AM = in_game_time(datetime.now(), server).hour < 12  # in gametime
+                if server == '':
+                    AM = datetime.now().hour < 12
+                else:
+                    AM = in_game_time(datetime.now(), server).hour < 12
                 weekday = datetime.now().weekday()
                 # excuted_time_in_cur_gameday =
 
