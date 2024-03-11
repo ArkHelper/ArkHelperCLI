@@ -164,16 +164,18 @@ def run():
     web_hook(get_report(running_result))
 
 
-def get_full_task(config):
+def get_full_task(config: dict):
     final_maatasks: list = []
-    overrides = config['override']
-    server = ''
-    account_name = ''
-    template_name = config.get('template','default')
+    overrides = config.get('override', [])
+    server = config.get('client_type', 'Official')
+    account_name = config.get('account_name', '')
+    template_name = config.get('template', 'default')
+    hash = f'{server}{account_name}'
+    device = var.global_config.get('task-device', {}).get(hash, None)
 
     template = var.config_templates[template_name]
     for maatask in template:
-        final_task_config = copy.deepcopy(maatask['task_config'])
+        final_task_config: dict = copy.deepcopy(maatask['task_config'])
         final_task_name = copy.deepcopy(maatask['task_name'])
 
         preference_task_config = \
@@ -210,10 +212,7 @@ def get_full_task(config):
                     end_datetime_obj = datetime.strptime(datetime_end, '%Y-%m-%d %H:%M:%S')
                     return start_datetime_obj <= current_datetime <= end_datetime_obj
 
-                if server == '':
-                    AM = datetime.now().hour < 12
-                else:
-                    AM = in_game_time(datetime.now(), server).hour < 12
+                AM = in_game_time(datetime.now(), server).hour < 12
                 weekday = datetime.now().weekday()
                 # excuted_time_in_cur_gameday =
 
@@ -229,7 +228,6 @@ def get_full_task(config):
                 else:
                     return config
             final_task_config = {key: get_config(key) for key in final_task_config}
-            pass
 
         def append():
             if final_task_config.get('enable', True):
@@ -240,8 +238,8 @@ def get_full_task(config):
 
         update_and_match_case()
         if final_task_name == 'StartUp':
-            server = final_task_config.get('client_type', 'Official')
-            account_name = final_task_config.get('account_name', '')
+            final_task_config.setdefault('client_type', server)
+            final_task_config.setdefault('account_name', account_name)
         elif final_task_name == 'Fight':
             stage = final_task_config.get('stage')
             if stage and type(stage) == dict:
@@ -250,14 +248,13 @@ def get_full_task(config):
             pass
         append()
 
-    hash = f'{config.get("device", "")}{server}{account_name}'
     if (index := len([t for t in var.tasks if t['hash'] == hash])) != 0:
         hash += f'_{index}'
 
     task = {
         'hash': hash,
         'task': final_maatasks,
-        'device': var.global_config.get('task-device', {}).get(hash, None),
+        'device': device,
         'server': server,
         'account_name': account_name
     }

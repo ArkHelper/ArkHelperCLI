@@ -1,9 +1,7 @@
 # A task will choose f"{client_type}{account_name}" as its unique identifier. If a repetition occurs, add an index at the end (starts at 1).
-- override: # Override fields in common task configuration templates
-    - task_name: StartUp
-      task_config:
-        client_type: Official
-        account_name: "4567"
+- client_type: Official # specify a client_type, CLI will automatically override Startup.client_type, default is Official. There is no need and not recommended to override by yourself.
+  account_name: 4567 # specify a account_name, CLI will automatically override Startup.account_name, default is empty("").
+  override: # Override fields in common task configuration templates
     - task_name: Fight
       task_config:
         stage: "" # The stage field accepts a string or a list. If it is a string, the specified content will be passed directly into MAA.
@@ -23,10 +21,8 @@
                           # datetime_between(start,end)(format: '2022-02-02 1:23:45')
             config: true
           - config: false # CLI will ergodic the list and match the first case meets the condition.
-- override:
-    - task_name: StartUp
-      task_config:
-        client_type: YoStarEN
+- client_type: YoStarEN
+  override:
     - task_name: Fight
       task_config:
         stage:
@@ -49,8 +45,6 @@
           S3-1: 5
           S3-3: 5
           3-7: 5
-- template: juststartup # You can choose a template. If you do not fill in this field, the default template = default.
-  override:
-    - task_name: StartUp 
-      task_config:
-        client_type: YoStarJP
+- client_type: YoStarJP
+  template: juststartup # You can choose a template. If you do not fill in this field, the default template = default.
+  override: []
