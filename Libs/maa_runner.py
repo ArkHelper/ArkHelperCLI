@@ -238,8 +238,8 @@ def get_full_task(config: dict):
 
         update_and_match_case()
         if final_task_name == 'StartUp':
-            final_task_config.setdefault('client_type', server)
-            final_task_config.setdefault('account_name', account_name)
+            final_task_config['client_type'] = server
+            final_task_config['account_name'] = account_name
         elif final_task_name == 'Fight':
             stage = final_task_config.get('stage')
             if stage and type(stage) == dict:

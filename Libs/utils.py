@@ -70,7 +70,7 @@ def get_config_templates():
     result = {}
     for file in walk_dir(var.config_path):
         if file.startswith('template_') and (file.endswith('.yaml') or file.endswith('.yml')):
-            result.setdefault(file.replace('.yml', '').replace('.yaml', '').replace('template_', ''), read_yaml(var.config_path / file))
+            result[file.replace('.yml', '').replace('.yaml', '').replace('template_', '')] = read_yaml(var.config_path / file)
     return result
 
 
