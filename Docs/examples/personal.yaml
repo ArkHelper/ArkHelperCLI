@@ -2,49 +2,46 @@
 - client_type: Official # specify a client_type, CLI will automatically override Startup.client_type, default is Official. There is no need and not recommended to override by yourself.
   account_name: 4567 # specify a account_name, CLI will automatically override Startup.account_name, default is empty("").
   override: # Override fields in common task configuration templates
-    - task_name: Fight
-      task_config:
-        stage: "" # The stage field accepts a string or a list. If it is a string, the specified content will be passed directly into MAA.
-    - task_name: Infrast
-      task_config:
-        enable: false # Override this field to false to disable this task (this task won't be added to <MAA Asst>)
-    - task_name: Recruit
-      task_config:
-        enable: # Cases for conditions can be used.
-          - condition: AM # The condition field should be a python expression that calculates a boolean value (default is True).
-                          # Built in field is:
-                          # AM (a Boolean value indicating whether the game time is AM) (if the task name is StartUp, then indicating whether the current local time is AM)
-                          # weekday (day of the week, where Monday == 0 ... Sunday == 6)
-                          # and built in methods are: 
-                          # time_between(start,end)(format: '1:23:45'),
-                          # date_between(start,end)(format: '2022-02-02'),
-                          # datetime_between(start,end)(format: '2022-02-02 1:23:45')
-            config: true
-          - config: false # CLI will ergodic the list and match the first case meets the condition.
+    Fight:
+      stage: "" # The stage field accepts a string or a list. If it is a string, the specified content will be passed directly into MAA.
+    Infrast:
+      enable: false # Override this field to false to disable this task (this task won't be added to <MAA Asst>)
+    Recruit:
+      enable: # Cases for conditions can be used.
+        - condition:
+            AM # The condition field should be a python expression that calculates a boolean value (default is True).
+            # Built in field is:
+            # AM (a Boolean value indicating whether the game time is AM) (if the task name is StartUp, then indicating whether the current local time is AM)
+            # weekday (day of the week, where Monday == 0 ... Sunday == 6)
+            # and built in methods are:
+            # time_between(start,end)(format: '1:23:45'),
+            # date_between(start,end)(format: '2022-02-02'),
+            # datetime_between(start,end)(format: '2022-02-02 1:23:45')
+          config: true
+        - config: false # CLI will ergodic the list and match the first case meets the condition.
 - client_type: YoStarEN
   override:
-    - task_name: Fight
-      task_config:
-        stage:
-          # If it is a list that assigns weights to specified levels, CLI will automatically parse the weights and randomly assign levels according to them. The weights are real numbers (R).
-          # Weight automatic balancing rules:
-          #   1. (corresponding level weight)/(corresponding level open days per week) = (actual weight).
-          LS-6: 5
-          CE-6: 5
-          PR-A-1: 1
-          PR-B-1: 1
-          PR-C-1: 1
-          PR-D-1: 1
-          2-9: 5
-          3-2: 5
-          3-3: 5
-          2-10: 5
-          S2-12: 5
-          S3-4: 5
-          S3-2: 5
-          S3-1: 5
-          S3-3: 5
-          3-7: 5
+    Fight:
+      stage:
+        # If it is a list that assigns weights to specified levels, CLI will automatically parse the weights and randomly assign levels according to them. The weights are real numbers (R).
+        # Weight automatic balancing rules:
+        #   1. (corresponding level weight)/(corresponding level open days per week) = (actual weight).
+        LS-6: 5
+        CE-6: 5
+        PR-A-1: 1
+        PR-B-1: 1
+        PR-C-1: 1
+        PR-D-1: 1
+        2-9: 5
+        3-2: 5
+        3-3: 5
+        2-10: 5
+        S2-12: 5
+        S3-4: 5
+        S3-2: 5
+        S3-1: 5
+        S3-3: 5
+        3-7: 5
 - client_type: YoStarJP
   template: juststartup # You can choose a template. If you do not fill in this field, the default template = default.
-  override: []
+  override: {}

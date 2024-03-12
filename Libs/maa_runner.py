@@ -166,7 +166,7 @@ def run():
 
 def get_full_task(config: dict):
     final_maatasks: list = []
-    overrides = config.get('override', [])
+    overrides = config.get('override', {})
     server = config.get('client_type', 'Official')
     account_name = config.get('account_name', '')
     template_name = config.get('template', 'default')
@@ -178,11 +178,7 @@ def get_full_task(config: dict):
         final_task_config: dict = copy.deepcopy(maatask['task_config'])
         final_task_name = copy.deepcopy(maatask['task_name'])
 
-        preference_task_config = \
-            (
-                [override['task_config'] for override in overrides if override['task_name'] == final_task_name] or
-                [{}]
-            )[0]
+        preference_task_config = overrides.get(final_task_name, {})
 
         def update_and_match_case():
             nonlocal final_task_config
