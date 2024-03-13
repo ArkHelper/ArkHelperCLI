@@ -238,14 +238,14 @@ class AsstProxy:
         self._logger.info(f'Start maatask {type}, time {time_remain} sec')
 
         i = 0
-        max_try_time = 3
+        max_try_time = 2
 
-        if type == 'Award':
-            max_try_time = 1  # FIXME: maa bug，找不到抽卡会报错，因此忽略
         if type == 'Fight':
             stage = config['stage']
             standby_stage = config['standby_stage']
             config.pop('standby_stage')
+            fight_ok = True
+            fight_reason = ''
 
         for i in range(max_try_time):
             self._logger.info(f'Maatask {type} {i+1}st/{max_try_time}max trying')
@@ -281,6 +281,15 @@ class AsstProxy:
                 elif self.status["current_maatask_status"][0] == Message.TaskChainStopped:
                     break
                 else:
+                    if type == 'Fight':
+                        fight_ok = True
+                        current_sanity = self.status['current_sanity']
+                        max_sanity = self.status['max_sanity']
+                        if current_sanity > max_sanity / 3:
+                            fight_ok = False
+                            fight_reason = f'current_sanity({current_sanity}) > max_sanity({max_sanity})/3, may failed'
+                            if i == 0:
+                                continue
                     break
             except Exception as e:
                 self._logger.info(f'Maatask {type} {i+1}st/{max_try_time}max trying failed: {e}')
@@ -294,19 +303,17 @@ class AsstProxy:
 
             status_ok = status_message == Message.TaskChainCompleted
             time_ok = time_remain >= 0
-            fight_ok = True
-
-            if type == 'Fight':
-                current_sanity = self.status['current_sanity']
-                max_sanity = self.status['max_sanity']
-                if current_sanity > max_sanity / 3:
-                    fight_ok = False
-                    reason.append(f'current_sanity({current_sanity}) > max_sanity({max_sanity})/3, may failed')
 
             if not time_ok:
                 reason.append('Timeout')
 
-            succeed = status_ok and time_ok and fight_ok
+            succeed = status_ok and time_ok
+
+            if type == 'Fight':
+                if not fight_ok:
+                    reason.append(fight_reason)
+                succeed = succeed and fight_ok
+                
             return succeed, reason
 
         succeed, reason = get_result()
