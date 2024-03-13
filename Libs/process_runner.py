@@ -35,7 +35,7 @@ def start_task_process(process_static_params, process_shared_status):
     device: Device = process_static_params['device']
     task = process_static_params['task']
     task_id = task['hash']
-    task_server = task['server']
+    client_type = task['server']
     process_str = f'taskprocess({task_id})'
     logger = device.logger.getChild(process_str)
     logger.debug('Created')
@@ -47,24 +47,86 @@ def start_task_process(process_static_params, process_shared_status):
 
     try:
         asstproxy = AsstProxy(task_id, logger, device, asst_callback)
-        asstproxy.load_res(task_server)
+        asstproxy.load_res(client_type)
         asstproxy.connect()
 
-        if device.current_status['server'] != task_server:
+        if device.current_status['server'] != client_type:
             if device.current_status['server']:
                 device.adb.exec_adb_cmd(f'shell am force-stop {arknights_package_name[device.current_status["server"]]}')
-            device.current_status['server'] = task_server
+            device.current_status['server'] = client_type
 
-        if task_server == 'Official':
-            newest_link = ArknightsAPI.get_newest_version()
-            newest_version = newest_link.split('/')[-1].replace('.apk', '').split('-')[-1]
-            local_version = device.adb.get_game_version(task_server).replace('.', '')
-            if newest_version != local_version:
-                download_to = var.cache_path / f'arknights_{task_server}_{newest_version}_{int(time.time())}.apk'
-                download(newest_link, download_to)
-                device.adb.install(download_to)
-                download_to.unlink(True)
-                logger.info('Arknights client has been successfully updated')
+        def update():
+            getupdate_support_info = {
+                'Official': True,
+                'Bilibili': True,
+                'YoStarJP': True,
+                'YoStarEN': True,
+                'YoStarKR': True,
+                'txwy': True
+            }
+            update_support_info = {
+                'Official': True,
+                'Bilibili': True,
+                'YoStarJP': False,
+                'YoStarEN': False,
+                'YoStarKR': False,
+                'txwy': False
+            }
+
+            if getupdate_support_info[client_type]:
+                local_version = device.adb.get_game_version(client_type)
+
+                need_update = False
+                newest = ''
+                local = ''
+
+                try:
+                    if client_type == 'Official':
+                        newest = ArknightsAPI.get_newest_version()
+                        local = local_version.replace('.', '')
+                        need_update = newest != local
+                    elif client_type in ['YoStarJP', 'YoStarEN', 'YoStarKR', 'txwy']:
+                        newest = QooAppAPI.get_newest_version(client_type)
+                        local = local_version
+                        need_update = newest != local
+                    elif client_type == 'Bilibili':
+                        newest = BiligameAPI.get_newest_version()
+                        local = local_version
+                        need_update = newest != local
+                    logger.debug(f'newest version = {newest}, local version = {local}')
+                except Exception as e:
+                    logger.warning(f'An unexpected error was occured when getting update: {e}')
+
+                if need_update:
+                    if update_support_info[client_type]:
+                        try:
+                            logger.debug(f'Trying to update')
+                            newest_link = ''
+
+                            if client_type == 'Official':
+                                newest_link = ArknightsAPI.get_newest_apk_link()
+                            elif client_type == 'Bilibili':
+                                newest_link = BiligameAPI.get_newest_apk_link()
+                            else:
+                                ...
+
+                            logger.debug(f'newest link = {newest_link}')
+                            download_to = var.cache_path / convert_str_to_legal_filename_windows(f'arknights_{client_type}_{newest}_{int(time.time())}.apk')
+
+                            logger.debug(f'Start to download the newest version')
+                            download(newest_link, download_to)
+
+                            logger.debug(f'Start to install')
+                            device.adb.install(download_to)
+
+                            download_to.unlink(True)
+                            logger.info('Arknights client has been successfully updated')
+                        except Exception as e:
+                            raise Exception(f'The newest version is {newest} but the local version is {local}. When updating, an error occured: {e}')
+                    else:
+                        raise Exception(f'The newest version is {newest} but the local version is {local}. The task cannot be run')
+
+        update()
 
         remain_time = var.global_config.get('max_task_waiting_time', 3600)
         execute, execute_disabled_by = True, ''

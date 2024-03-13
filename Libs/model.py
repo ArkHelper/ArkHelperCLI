@@ -7,6 +7,8 @@ import time
 import logging
 import json
 from typing import Optional, Union, TypeVar
+from bs4 import BeautifulSoup
+from fake_useragent import UserAgent
 
 import var
 from Libs.MAA.asst.asst import Asst
@@ -313,7 +315,7 @@ class AsstProxy:
                 if not fight_ok:
                     reason.append(fight_reason)
                 succeed = succeed and fight_ok
-                
+
             return succeed, reason
 
         succeed, reason = get_result()
@@ -359,4 +361,37 @@ class MaataskRunResult:
 class ArknightsAPI:
     def get_newest_version() -> str:
         '''return 2221 if version is 2.2.21'''
+        return ArknightsAPI.get_newest_apk_link().split('/')[-1].replace('.apk', '').split('-')[-1]
+
+    def get_newest_apk_link() -> str:
         return requests.get('https://ak.hypergryph.com/downloads/android_lastest', allow_redirects=False).headers['Location']
+
+
+class BiligameAPI:
+    def get_newest_version() -> str:
+        '''return version'''
+        return requests.get('https://line1-h5-pc-api.biligame.com/game/detail/content?game_base_id=101772').json()['data']['android_version']
+
+    def get_newest_apk_link() -> str:
+        return requests.get('https://line1-h5-pc-api.biligame.com/game/detail/gameinfo?game_base_id=101772').json()['data']['android_download_link']
+
+
+class QooAppAPI:
+    def get_newest_version(client_type) -> str:
+        '''return version'''
+        id_list = {
+            'YoStarJP': 7117,
+            'YoStarEN': 9404,
+            'YoStarKR': 9419,
+            'txwy': 23510
+        }
+        id = id_list[client_type]
+        ua = UserAgent().random
+        html = requests.get(f'https://apps.qqaoop.com/app/{id}', headers={'User-Agent': ua}).text
+        soup = BeautifulSoup(html, 'html.parser')
+        ld_json_scripts = soup.find_all('script', type="application/ld+json")
+        for script in ld_json_scripts:
+            json_data = json.loads(script.string)
+            if ver := json_data.get('softwareVersion'):
+                return ver
+        raise Exception(f'Failed to get the newest version of {client_type}')

@@ -445,6 +445,7 @@ def run_in_thread(func: Callable, args: tuple, max_try_time=5, timeout=10, logge
 
 def download(url, path):
     path = str(path)
+    logging.debug(f'Start to download from {url} to {path}')
     response = requests.get(url)
     if response.status_code == 200:
         with open(path, 'wb') as file:

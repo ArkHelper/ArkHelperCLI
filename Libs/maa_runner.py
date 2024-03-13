@@ -99,18 +99,21 @@ def run():
         process: multiprocessing.Process | None
         process_static_params: dict | None
         process_shared_status: dict | None
+        finished: bool
 
     [var.tasks.append(get_full_task(personal_config)) for personal_config in var.personal_configs]
     devices = [Device(dev_config) for dev_config in var.global_config['devices']]
-    statuses: list[DeviceStatus] = [DeviceStatus(_device, None, None, None) for _device in devices]
+    statuses: list[DeviceStatus] = [DeviceStatus(_device, None, None, None, False) for _device in devices]
     running_result = {task.get('hash'): None for task in var.tasks}
 
     ...
 
     while True:
-        ended_dev = []
         for status in statuses:
             logger = status.device.logger
+
+            if status.finished:
+                continue
 
             if status.process != None:
                 if not status.process.is_alive():
@@ -127,7 +130,7 @@ def run():
                 def no_task():
                     logger.debug(f'No task to distribute. Ended')
                     status.device.kill()
-                    ended_dev.append(status.device)
+                    status.finished = True
                 if var.tasks:
                     distribute_task = (
                         [task for task in var.tasks if task.get('device') == status.device.alias] or
@@ -155,7 +158,7 @@ def run():
                 else:
                     no_task()
 
-        if len(ended_dev) == len(devices):
+        if all([_status.finished for _status in statuses]):
             logging.debug(f'All devices ended. Ready to exit')
             break
         else:
