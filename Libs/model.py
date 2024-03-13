@@ -133,13 +133,46 @@ class Device:
                 kill_processes_by_pid(player_pid)
 
 
+class DictProxy:
+    def __init__(self, logger: logging.Logger):
+        self._logger = logger
+        self._target_dict = {}
+
+    def __getitem__(self, key):
+        # self._logger.debug(f"Getting item with key: {key}")
+        return self._target_dict[key]
+
+    def __setitem__(self, key, value):
+        self._logger.debug(f"Setting item with key: {key} and value: {value}")
+        self._target_dict[key] = value
+
+    def __delitem__(self, key):
+        self._logger.debug(f"Deleting item with key: {key}")
+        del self._target_dict[key]
+
+    def __len__(self):
+        return len(self._target_dict)
+
+    def __iter__(self):
+        return iter(self._target_dict)
+
+    def __contains__(self, item):
+        return item in self._target_dict
+
+    def __repr__(self):
+        return repr(self._target_dict)
+
+
 class AsstProxy:
 
     def __init__(self, id, last_logger: logging.Logger, device: Device, asst_callback: Asst.CallBackType) -> None:
         self._proxy_id = id
         self._logger = last_logger.getChild(str(self))
         self.device = device
-        self.current_maatask_status: tuple[Message, dict, object] = (None, None, None)
+        self.status = DictProxy(self._logger.getChild('maastatus'))
+        self.status['current_maatask_status'] = (None, None, None)
+        self.status['current_sanity'] = 0
+        self.status['max_sanity'] = 0
 
         self.userdir: pathlib.Path = var.maa_usrdir_path / convert_str_to_legal_filename_windows(self._proxy_id)
         self.asst = Asst(var.maa_env, self.userdir, asst_callback)
@@ -192,8 +225,12 @@ class AsstProxy:
     def process_callback(self, msg: Message, details: dict, arg):
         self._logger.debug(f'Got callback: {msg},{arg},{details}')
         if msg in [Message.TaskChainExtraInfo, Message.TaskChainCompleted, Message.TaskChainError, Message.TaskChainStopped, Message.TaskChainStart]:
-            self.current_maatask_status = (msg, details, arg)
-            self._logger.debug(f'current_maatask_status turned to {self.current_maatask_status} according to callback')
+            self.status['current_maatask_status'] = (msg, details, arg)
+        elif msg == Message.SubTaskExtraInfo:
+            if details.get('class', '') == 'asst::SanityBeforeStageTaskPlugin':
+                detail = details.get('details', {})
+                self.status['current_sanity'] = detail.get('current_sanity', 0)
+                self.status['max_sanity'] = detail.get('max_sanity', 0)
 
     def run_maatask(self, maatask, time_remain) -> 'MaataskRunResult':
         type = maatask['task_name']
@@ -201,7 +238,7 @@ class AsstProxy:
         self._logger.info(f'Start maatask {type}, time {time_remain} sec')
 
         i = 0
-        max_try_time = 4
+        max_try_time = 3
 
         if type == 'Award':
             max_try_time = 1  # FIXME: maa bug，找不到抽卡会报错，因此忽略
@@ -236,12 +273,12 @@ class AsstProxy:
                             self._logger.debug(f'Asst stop invoked')
                             asst_stop_invoked = True
                 self._logger.debug(f'Asst running status ended')
-                self._logger.debug(f'current_maatask_status={self.current_maatask_status}')
-                if self.current_maatask_status[0] == Message.TaskChainError:
+                self._logger.debug(f'current_maatask_status={self.status["current_maatask_status"]}')
+                if self.status["current_maatask_status"][0] == Message.TaskChainError:
                     if type == "StartUp":
                         self.device.adb.exec_adb_cmd(f'shell am force-stop {arknights_package_name[self.device.current_status["server"]]}')
                     continue
-                elif self.current_maatask_status[0] == Message.TaskChainStopped:
+                elif self.status["current_maatask_status"][0] == Message.TaskChainStopped:
                     break
                 else:
                     break
@@ -249,16 +286,32 @@ class AsstProxy:
                 self._logger.info(f'Maatask {type} {i+1}st/{max_try_time}max trying failed: {e}')
 
         self._logger.debug(f'Maatask {type} ended')
-        status_message = self.current_maatask_status[0]
-        status_ok = status_message == Message.TaskChainCompleted
-        time_ok = time_remain >= 0
-        succeed = status_ok and time_ok
-        reason = [status_message.name]
-        if not time_ok:
-            reason.append('Timeout')
+        status_message = self.status["current_maatask_status"][0]
+        self._logger.debug(f'Status={status_message}, time_remain={time_remain}')
+
+        def get_result():
+            reason = [status_message.name]
+
+            status_ok = status_message == Message.TaskChainCompleted
+            time_ok = time_remain >= 0
+            fight_ok = True
+
+            if type == 'Fight':
+                current_sanity = self.status['current_sanity']
+                max_sanity = self.status['max_sanity']
+                if current_sanity > max_sanity / 3:
+                    fight_ok = False
+                    reason.append(f'current_sanity({current_sanity}) > max_sanity({max_sanity})/3, may failed')
+
+            if not time_ok:
+                reason.append('Timeout')
+
+            succeed = status_ok and time_ok and fight_ok
+            return succeed, reason
+
+        succeed, reason = get_result()
         reason_str = ','.join(reason)
 
-        self._logger.debug(f'Status={status_message}, time_remain={time_remain}')
         if succeed:
             self._logger.info(f'Maatask {type} ended successfully beacuse of {reason_str}')
         else:
@@ -278,7 +331,6 @@ class MaataskRunResult:
         succeed: str
         reason: str
         tried_times: int
-        pass
 
     def __init__(self, type, succeed, reason, tried_times, time_remain) -> None:
         self.type = type
