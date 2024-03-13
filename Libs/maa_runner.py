@@ -254,5 +254,5 @@ def get_full_task(config: dict):
         'server': server,
         'account_name': account_name
     }
-    logging.debug(f'Initialization ended for task {hash}')
+    logging.debug(f'Initialization ended for task {hash}: {task}')
     return task
