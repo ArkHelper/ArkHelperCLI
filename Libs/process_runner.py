@@ -56,7 +56,7 @@ def start_task_process(process_static_params, process_shared_status):
             device.current_status['server'] = task_server
 
         if task_server == 'Official':
-            newest_link = requests.get('https://ak.hypergryph.com/downloads/android_lastest', allow_redirects=False).headers['Location']
+            newest_link = ArknightsAPI.get_newest_version()
             newest_version = newest_link.split('/')[-1].replace('.apk', '').split('-')[-1]
             local_version = device.adb.get_game_version(task_server).replace('.', '')
             if newest_version != local_version:

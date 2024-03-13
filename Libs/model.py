@@ -354,3 +354,9 @@ class MaataskRunResult:
             },
             'time_remain': self.time_remain
         }
+
+
+class ArknightsAPI:
+    def get_newest_version() -> str:
+        '''return 2221 if version is 2.2.21'''
+        return requests.get('https://ak.hypergryph.com/downloads/android_lastest', allow_redirects=False).headers['Location']
