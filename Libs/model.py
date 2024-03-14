@@ -359,12 +359,16 @@ class MaataskRunResult:
 
 
 class ArknightsAPI:
+    _newest_link = None
+
     def get_newest_version() -> str:
         '''return 2221 if version is 2.2.21'''
         return ArknightsAPI.get_newest_apk_link().split('/')[-1].replace('.apk', '').split('-')[-1]
 
     def get_newest_apk_link() -> str:
-        return requests.get('https://ak.hypergryph.com/downloads/android_lastest', allow_redirects=False).headers['Location']
+        if not ArknightsAPI._newest_link:
+            ArknightsAPI._newest_link = requests.get('https://ak.hypergryph.com/downloads/android_lastest', allow_redirects=False).headers['Location']
+        return ArknightsAPI._newest_link
 
 
 class BiligameAPI:
