@@ -149,16 +149,20 @@ def start_task_process(process_static_params, process_shared_status):
         result_succeed = all([t.exec_result.succeed for t in result_maatasks])
         result_maatasks = [t.dict() for t in result_maatasks]
 
+        del asstproxy
+        logger.debug('Ready to exit')
+    except Exception as e:
+        result_succeed = False
+        error_str = f'An unexpected error was occured when running: {e}'
+        result_reason = [error_str]
+        result_maatasks = []
+        logger.error(error_str, exc_info=True)
+    finally:
         process_shared_status['result'] = {
             'task': task_id,
             'exec_result': {
                 'succeed': result_succeed,
-                'reason': result_reason,
+                'reason': ','.join(result_reason),
                 'maatasks': result_maatasks
             }
         }
-
-        del asstproxy
-        logger.debug('Ready to exit')
-    except Exception as e:
-        logger.error(f'An unexpected error was occured when running: {e}', exc_info=True)
