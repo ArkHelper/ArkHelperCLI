@@ -77,7 +77,7 @@ def web_hook(report):
 
         try:
             logging.debug(f'Start to webhook to {webhook_url}')
-            webhook_response = requests.request(webhook_method, webhook_url, data=webhook_request_body, headers=webhook_headers)
+            webhook_response = requests.request(webhook_method, webhook_url, data=webhook_request_body, headers=webhook_headers, timeout=10)
             webhook_result = f'Webhook to {webhook_url}: {webhook_response.status_code}\n{webhook_response.text}'
             if webhook_response.ok:
                 logging.debug(webhook_result)

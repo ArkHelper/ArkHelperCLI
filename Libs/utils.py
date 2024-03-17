@@ -374,7 +374,7 @@ def update_nav():
         write_file(last_update_time_file_local, '')
         last_update_time_local = 0
 
-    last_update_time_content_server = requests.get(last_update_time_file_server).content
+    last_update_time_content_server = requests.get(last_update_time_file_server, timeout=10).content
     last_update_time_server = json.loads(last_update_time_content_server)['timestamp']
 
     if last_update_time_local < last_update_time_server:
@@ -387,7 +387,7 @@ def update_nav():
         ota_tasks_path = path / 'cache' / 'resource' / 'tasks.json'
 
         ota_tasks_path.parent.mkdir(parents=True, exist_ok=True)
-        write_file(ota_tasks_path, requests.get(ota_tasks_url).content.decode('utf-8'))
+        write_file(ota_tasks_path, requests.get(ota_tasks_url, timeout=10).content.decode('utf-8'))
         logging.debug(f'Asst tasks updated')
 
         write_file(last_update_time_file_local, last_update_time_content_server.decode('utf-8'))

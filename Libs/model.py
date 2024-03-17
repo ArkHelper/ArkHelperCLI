@@ -367,17 +367,17 @@ class ArknightsAPI:
 
     def get_newest_apk_link() -> str:
         if not ArknightsAPI._newest_link:
-            ArknightsAPI._newest_link = requests.get('https://ak.hypergryph.com/downloads/android_lastest', allow_redirects=False).headers['Location']
+            ArknightsAPI._newest_link = requests.get('https://ak.hypergryph.com/downloads/android_lastest', allow_redirects=False, timeout=10).headers['Location']
         return ArknightsAPI._newest_link
 
 
 class BiligameAPI:
     def get_newest_version() -> str:
         '''return version'''
-        return requests.get('https://line1-h5-pc-api.biligame.com/game/detail/content?game_base_id=101772').json()['data']['android_version']
+        return requests.get('https://line1-h5-pc-api.biligame.com/game/detail/content?game_base_id=101772', timeout=10).json()['data']['android_version']
 
     def get_newest_apk_link() -> str:
-        return requests.get('https://line1-h5-pc-api.biligame.com/game/detail/gameinfo?game_base_id=101772').json()['data']['android_download_link']
+        return requests.get('https://line1-h5-pc-api.biligame.com/game/detail/gameinfo?game_base_id=101772', timeout=10).json()['data']['android_download_link']
 
 
 class QooAppAPI:
@@ -391,7 +391,7 @@ class QooAppAPI:
         }
         id = id_list[client_type]
         ua = UserAgent().random
-        html = requests.get(f'https://apps.qqaoop.com/app/{id}', headers={'User-Agent': ua}).text
+        html = requests.get(f'https://apps.qqaoop.com/app/{id}', headers={'User-Agent': ua}, timeout=10).text
         soup = BeautifulSoup(html, 'html.parser')
         ld_json_scripts = soup.find_all('script', type="application/ld+json")
         for script in ld_json_scripts:
