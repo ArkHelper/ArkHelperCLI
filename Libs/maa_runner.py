@@ -105,58 +105,67 @@ def run():
     devices = [Device(dev_config) for dev_config in var.global_config['devices']]
     statuses: list[DeviceStatus] = [DeviceStatus(_device, None, None, None, False) for _device in devices]
     running_result = {task.get('hash'): None for task in var.tasks}
+    device_count_limit = var.global_config.get('devices_running_limit', 10)
 
     ...
 
     while True:
+        for status in statuses:
+            if status.process != None:
+                if not status.process.is_alive():
+                    task_hash = status.process_static_params["task"]["hash"]
+                    status.device.logger.debug(f'TaskProcess {task_hash} ended, ready to clear')
+                    running_result[task_hash] = status.process_shared_status.get('result', None)
+                    status.process = None
+                    status.process_static_params = None
+                    status.process_shared_status = None
+
+        def running_devices_count():
+            return len([_status for _status in statuses if _status.process != None and not _status.finished])
+
         for status in statuses:
             logger = status.device.logger
 
             if status.finished:
                 continue
 
-            if status.process != None:
-                if not status.process.is_alive():
-                    task_hash = status.process_static_params["task"]["hash"]
-                    logger.debug(f'TaskProcess {task_hash} ended, ready to clear')
-                    running_result[task_hash] = status.process_shared_status.get('result', None)
-                    status.process = None
-                    status.process_static_params = None
-                    status.process_shared_status = None
-
             if status.process == None:
-                logger.debug(f'Process is None, ready to distribute task')
+                _running_devices_count = running_devices_count()
 
-                def no_task():
-                    logger.debug(f'No task to distribute. Ended')
-                    status.device.kill()
-                    status.finished = True
-                if var.tasks:
-                    distribute_task = (
-                        [task for task in var.tasks if task.get('device') == status.device.alias] or
-                        [task for task in var.tasks if task.get('device') is None] or
-                        [None]
-                    )[0]
+                if _running_devices_count < device_count_limit:
+                    logger.debug(f'{_running_devices_count} devices is running. OK for this')
+                    logger.debug(f'Process is None, ready to distribute task')
 
-                    if distribute_task:
-                        var.tasks.remove(distribute_task)
-                        process_static_params = {
-                            'task': distribute_task,
-                            'device': status.device
-                        }
-                        process_shared_status = multiprocessing.Manager().dict()
-                        process = multiprocessing.Process(target=start_task_process, args=(process_static_params, process_shared_status, ))
+                    def no_task():
+                        logger.debug(f'No task to distribute. Ended')
+                        status.device.kill()
+                        status.finished = True
+                    if var.tasks:
+                        distribute_task = (
+                            [task for task in var.tasks if task.get('device') == status.device.alias] or
+                            [task for task in var.tasks if task.get('device') is None] or
+                            [None]
+                        )[0]
 
-                        status.process = process
-                        status.process_static_params = process_static_params
-                        status.process_shared_status = process_shared_status
+                        if distribute_task:
+                            var.tasks.remove(distribute_task)
+                            process_static_params = {
+                                'task': distribute_task,
+                                'device': status.device
+                            }
+                            process_shared_status = multiprocessing.Manager().dict()
+                            process = multiprocessing.Process(target=start_task_process, args=(process_static_params, process_shared_status, ))
 
-                        logger.debug(f'Ready to start a task process(task={distribute_task["hash"]})')
-                        process.start()
+                            status.process = process
+                            status.process_static_params = process_static_params
+                            status.process_shared_status = process_shared_status
+
+                            logger.debug(f'Ready to start a task process(task={distribute_task["hash"]})')
+                            process.start()
+                        else:
+                            no_task()
                     else:
                         no_task()
-                else:
-                    no_task()
 
         if all([_status.finished for _status in statuses]):
             logging.debug(f'All devices ended. Ready to exit')

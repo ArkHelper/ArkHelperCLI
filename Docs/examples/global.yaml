@@ -13,6 +13,7 @@ devices:
     process_name: # Accept a string or a list. A list means killing all processes in it. 
       - MuMuVMMHeadless.exe
       - MuMuPlayer.exe
+devices_running_limit: 1 # The maximum number of devices running at the same time, default is 10
 task-device: # Use unique identifier(rules in personal.yaml) to match the device corresponding to the task, optional
   Official4567: mumu
   YoStarEN: mumu
