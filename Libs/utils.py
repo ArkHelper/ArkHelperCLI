@@ -13,6 +13,7 @@ import requests
 import yaml
 import pytz
 import colorlog
+from urllib.parse import quote
 from typing import Callable
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
@@ -48,6 +49,43 @@ def mk_CLI_dir():
     var.static_path.mkdir(exist_ok=True)
     var.cache_path.mkdir(exist_ok=True)
     var.maa_usrdir_path.mkdir(exist_ok=True)
+
+
+def web_hook(report):
+    vars_for_hook = [('#{'+k+'}', v) for k, v in locals().copy().items() if k != 'vars_for_hook']
+
+    for webhook_config in var.global_config.get('webhook', []):
+        def replace_var(text: str, exec_quote=False) -> str:
+            def replace_escape(es: str) -> str:
+                if True:
+                    es = es.replace('\n', '\\n').replace('\t', '\\t').replace('\r', '\\r')
+                if exec_quote:
+                    es = quote(es)
+                return es
+
+            for origin, after in vars_for_hook:
+                text = text.replace(origin, replace_escape(after))
+            return text
+
+        if webhook_body := webhook_config.get('body'):
+            webhook_method = 'POST'
+            webhook_body = replace_var(webhook_body).encode()
+        else:
+            webhook_method = 'GET'
+        webhook_url = replace_var(webhook_config['url'], exec_quote=True)
+        webhook_headers = {replace_var(k): replace_var(v) for k, v in webhook_config.get('headers', {}).items()}
+
+        try:
+            logger = logging.getLogger(f'Webhook: {webhook_method} {webhook_url}')
+            logger.debug(f'Start to webhook')
+            webhook_response = requests.request(webhook_method, webhook_url, data=webhook_body, headers=webhook_headers, timeout=10)
+            webhook_result = f'{webhook_response.status_code} {webhook_response.text}'
+            if webhook_response.ok:
+                logger.debug(webhook_result)
+            else:
+                logger.warning(webhook_result)
+        except Exception as e:
+            logger.error(f'{e}')
 
 
 def convert_str_to_legal_filename_windows(filename):
