@@ -17,11 +17,11 @@ devices_running_limit: 1 # The maximum number of devices running at the same tim
 task-device: # Use unique identifier(rules in personal.yaml) to match the device corresponding to the task, optional
   Official4567: mumu
   YoStarEN: mumu
-webhook: # optional
-  - method: POST
-    url: http://your.url:1234/send_private_msg
-    request_body: # built-in variable is available. So do url. Including:
-                  # #{report} : str, report text after the end of run
+webhook:  # optional
+          # built-in variable is available for body, header and url. Including:
+          # #{report} : str, report text after the end of run
+  - url: http://your.url:1234/send_private_msg
+    body: # optional, if it is not filled in, the method is GET otherwise POST
     >
       {
           "user_id": 123456789,
@@ -32,6 +32,6 @@ webhook: # optional
               }
           }
       }
-    headers: 
+    headers: #optional
       Authorization: "Bearer 123456789987654321"
       Content-Type: 'application/json'

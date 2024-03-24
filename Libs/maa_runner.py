@@ -57,31 +57,32 @@ def get_report(result):
 def web_hook(report):
     vars_for_hook = [('#{'+k+'}', v) for k, v in locals().copy().items() if k != 'vars_for_hook']
 
-    def get_var(text: str, exec_quote=False) -> str:
-        def replace_escape(es: str) -> str:
-            es = es.replace('\n', '\\n').replace('\t', '\\t').replace('\r', '\\r')
-            if exec_quote:
-                es = quote(es)
-            return es
-
-        for origin, after in vars_for_hook:
-            text = text.replace(origin, replace_escape(after))
-        return text
-
     for webhook_config in var.global_config.get('webhook', []):
-        webhook_method = webhook_config['method']
-        if webhook_method == 'GET':
-            webhook_request_body = None
+        def replace_var(text: str, exec_quote=False) -> str:
+            def replace_escape(es: str) -> str:
+                if True:
+                    es = es.replace('\n', '\\n').replace('\t', '\\t').replace('\r', '\\r')
+                if exec_quote:
+                    es = quote(es)
+                return es
+
+            for origin, after in vars_for_hook:
+                text = text.replace(origin, replace_escape(after))
+            return text
+
+        if webhook_body := webhook_config.get('body'):
+            webhook_method = 'POST'
+            webhook_body = replace_var(webhook_body).encode()
         else:
-            webhook_request_body = get_var(webhook_config['request_body']).encode()
-        webhook_url = get_var(webhook_config['url'], exec_quote=True)
-        webhook_headers = webhook_config['headers']
+            webhook_method = 'GET'
+        webhook_url = replace_var(webhook_config['url'], exec_quote=True)
+        webhook_headers = {replace_var(k): replace_var(v) for k, v in webhook_config.get('headers', {}).items()}
 
         try:
             logger = logging.getLogger(f'Webhook: {webhook_method} {webhook_url}')
             logger.debug(f'Start to webhook')
-            webhook_response = requests.request(webhook_method, webhook_url, data=webhook_request_body, headers=webhook_headers, timeout=10)
-            webhook_result = f'{webhook_response.status_code}\n{webhook_response.text}'
+            webhook_response = requests.request(webhook_method, webhook_url, data=webhook_body, headers=webhook_headers, timeout=10)
+            webhook_result = f'{webhook_response.status_code} {webhook_response.text}'
             if webhook_response.ok:
                 logger.debug(webhook_result)
             else:
