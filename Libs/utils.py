@@ -51,10 +51,18 @@ def mk_CLI_dir():
     var.maa_usrdir_path.mkdir(exist_ok=True)
 
 
-def web_hook(report):
+def web_hook(event, report=None):
     vars_for_hook = [('#{'+k+'}', v) for k, v in locals().copy().items() if k != 'vars_for_hook']
 
     for webhook_config in var.global_config.get('webhook', []):
+        webhook_on = webhook_config.get('on', 'all')
+        if type(webhook_on) == list:
+            if not event in webhook_on:
+                continue
+        elif type(webhook_on) == str:
+            if not webhook_on in ['all', event]:
+                continue
+
         def replace_var(text: str, exec_quote=False) -> str:
             def replace_escape(es: str) -> str:
                 if True:
@@ -73,7 +81,9 @@ def web_hook(report):
         else:
             webhook_method = 'GET'
         webhook_url = replace_var(webhook_config['url'], exec_quote=True)
-        webhook_headers = {replace_var(k): replace_var(v) for k, v in webhook_config.get('headers', {}).items()}
+        webhook_headers = {'X-ArkHelper-Event': '#{event}'}
+        webhook_headers.update(webhook_config.get('headers', {}))
+        webhook_headers = {replace_var(k): replace_var(v) for k, v in webhook_headers.items()}
 
         try:
             logger = logging.getLogger(f'Webhook: {webhook_method} {webhook_url}')

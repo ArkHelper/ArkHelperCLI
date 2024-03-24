@@ -140,7 +140,7 @@ def run():
         else:
             time.sleep(2)
 
-    web_hook(report=get_report(running_result))
+    web_hook('run-finished', report=get_report(running_result))
 
 
 def get_full_task(config: dict):
