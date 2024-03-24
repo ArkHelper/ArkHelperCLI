@@ -55,36 +55,39 @@ def get_report(result):
 
 
 def web_hook(report):
-    def replace_var(text: str, exec_quote=False) -> str:
+    vars_for_hook = [('#{'+k+'}', v) for k, v in locals().copy().items() if k != 'vars_for_hook']
+
+    def get_var(text: str, exec_quote=False) -> str:
         def replace_escape(es: str) -> str:
             es = es.replace('\n', '\\n').replace('\t', '\\t').replace('\r', '\\r')
             if exec_quote:
                 es = quote(es)
             return es
 
-        replace_list = [
-            ('#{report}', report)
-        ]  # Add a switch to it to support more built-in variables
-        for origin, after in replace_list:
+        for origin, after in vars_for_hook:
             text = text.replace(origin, replace_escape(after))
         return text
 
     for webhook_config in var.global_config.get('webhook', []):
         webhook_method = webhook_config['method']
-        webhook_request_body = replace_var(webhook_config['request_body']).encode()
-        webhook_url = replace_var(webhook_config['url'], exec_quote=True)
+        if webhook_method == 'GET':
+            webhook_request_body = None
+        else:
+            webhook_request_body = get_var(webhook_config['request_body']).encode()
+        webhook_url = get_var(webhook_config['url'], exec_quote=True)
         webhook_headers = webhook_config['headers']
 
         try:
-            logging.debug(f'Start to webhook to {webhook_url}')
+            logger = logging.getLogger(f'Webhook: {webhook_method} {webhook_url}')
+            logger.debug(f'Start to webhook')
             webhook_response = requests.request(webhook_method, webhook_url, data=webhook_request_body, headers=webhook_headers, timeout=10)
-            webhook_result = f'Webhook to {webhook_url}: {webhook_response.status_code}\n{webhook_response.text}'
+            webhook_result = f'{webhook_response.status_code}\n{webhook_response.text}'
             if webhook_response.ok:
-                logging.debug(webhook_result)
+                logger.debug(webhook_result)
             else:
-                logging.warning(webhook_result)
+                logger.warning(webhook_result)
         except Exception as e:
-            logging.error(f'Webhook to {webhook_url}: {e}')
+            logger.error(f'{e}')
 
 
 def run():
@@ -173,7 +176,7 @@ def run():
         else:
             time.sleep(2)
 
-    web_hook(get_report(running_result))
+    web_hook(report=get_report(running_result))
 
 
 def get_full_task(config: dict):
