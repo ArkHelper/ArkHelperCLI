@@ -224,13 +224,17 @@ def get_full_task(config: dict):
                 weekday = datetime.now().weekday()
                 # excuted_time_in_cur_gameday =
 
-                if type(config) == list:
+                if type(config) == dict:
                     try:
                         for case in config:
-                            case_condition = case.get('condition', 'True')
-                            case_config = case['config']
-                            if eval(case_condition):
-                                return case_config
+                            case_config = config[case]
+                            if case.replace(' ', '') in ['', 'default']:
+                                case = 'True'
+                            case_eval = eval(case)
+                            if type(case_eval) != bool:
+                                raise Exception()
+
+                            return case_config
                     except:
                         return config
                 else:

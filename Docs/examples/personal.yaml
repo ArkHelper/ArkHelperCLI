@@ -7,18 +7,19 @@
     Infrast:
       enable: false # Override this field to false to disable this task (this task won't be added to <MAA Asst>)
     Recruit:
-      enable: # Cases for conditions can be used.
-        - condition:
-            AM # The condition field should be a python expression that calculates a boolean value (default is True).
-            # Built in field is:
-            # AM (a Boolean value indicating whether the game time is AM) (if the task name is StartUp, then indicating whether the current local time is AM)
-            # weekday (day of the week, where Monday == 0 ... Sunday == 6)
-            # and built in methods are:
-            # time_between(start,end)(format: '1:23:45'),
-            # date_between(start,end)(format: '2022-02-02'),
-            # datetime_between(start,end)(format: '2022-02-02 1:23:45')
-          config: true
-        - config: false # CLI will ergodic the list and match the first case meets the condition.
+      enable:
+        # You can add conditions by editing the key, it should be a python expression that calculates a boolean value (default is True).
+        # Built in field are:
+        # AM (a Boolean value indicating whether the game time is AM) (if the task name is StartUp, then indicating whether the current local time is AM)
+        # weekday (day of the week, where Monday == 0 ... Sunday == 6)
+        # and built in methods are:
+        # time_between(start,end)(format: '1:23:45'),
+        # date_between(start,end)(format: '2022-02-02'),
+        # datetime_between(start,end)(format: '2022-02-02 1:23:45')
+        # In particular, an empty string is considered as True.
+        # CLI will ergodic this dict and match the first case meets the condition.
+        "AM": true
+        "": false
 - client_type: YoStarEN
   override:
     Fight:
