@@ -167,29 +167,32 @@ def get_full_task(config: dict):
                 nonlocal final_task_config
                 config = final_task_config[key]
 
-                def time_between(time_start, time_end):
-                    current_time = datetime.now().strftime('%H:%M')
-                    start_time_obj = datetime.strptime(time_start, '%H:%M')
-                    end_time_obj = datetime.strptime(time_end, '%H:%M')
-                    current_time_obj = datetime.strptime(current_time, '%H:%M')
-                    return start_time_obj <= current_time_obj <= end_time_obj
+                def aval_expression():
+                    def time_between(time_start, time_end):
+                        current_time = datetime.now().strftime('%H:%M')
+                        start_time_obj = datetime.strptime(time_start, '%H:%M')
+                        end_time_obj = datetime.strptime(time_end, '%H:%M')
+                        current_time_obj = datetime.strptime(current_time, '%H:%M')
+                        return start_time_obj <= current_time_obj <= end_time_obj
 
-                def date_between(date_start, date_end):
-                    current_date = datetime.now().strftime('%Y-%m-%d')
-                    start_date_obj = datetime.strptime(date_start, '%Y-%m-%d')
-                    end_date_obj = datetime.strptime(date_end, '%Y-%m-%d')
-                    current_date_obj = datetime.strptime(current_date, '%Y-%m-%d')
-                    return start_date_obj <= current_date_obj <= end_date_obj
+                    def date_between(date_start, date_end):
+                        current_date = datetime.now().strftime('%Y-%m-%d')
+                        start_date_obj = datetime.strptime(date_start, '%Y-%m-%d')
+                        end_date_obj = datetime.strptime(date_end, '%Y-%m-%d')
+                        current_date_obj = datetime.strptime(current_date, '%Y-%m-%d')
+                        return start_date_obj <= current_date_obj <= end_date_obj
 
-                def datetime_between(datetime_start, datetime_end):
-                    current_datetime = datetime.now()
-                    start_datetime_obj = datetime.strptime(datetime_start, '%Y-%m-%d %H:%M:%S')
-                    end_datetime_obj = datetime.strptime(datetime_end, '%Y-%m-%d %H:%M:%S')
-                    return start_datetime_obj <= current_datetime <= end_datetime_obj
+                    def datetime_between(datetime_start, datetime_end):
+                        current_datetime = datetime.now()
+                        start_datetime_obj = datetime.strptime(datetime_start, '%Y-%m-%d %H:%M:%S')
+                        end_datetime_obj = datetime.strptime(datetime_end, '%Y-%m-%d %H:%M:%S')
+                        return start_datetime_obj <= current_datetime <= end_datetime_obj
 
-                AM = in_game_time(datetime.now(), server).hour < 12
-                weekday = datetime.now().weekday()
-                # excuted_time_in_cur_gameday =
+                    AM = in_game_time(datetime.now(), server).hour < 12
+                    weekday = datetime.now().weekday()
+                    # excuted_time_in_cur_gameday =
+
+                    return locals().copy()
 
                 if type(config) == dict:
                     try:
@@ -197,11 +200,13 @@ def get_full_task(config: dict):
                             case_config = config[case]
                             if case.replace(' ', '') in ['', 'default']:
                                 case = 'True'
-                            case_eval = eval(case)
+                            case_eval = eval(case, {}, aval_expression())
                             if type(case_eval) != bool:
                                 raise Exception()
-
-                            return case_config
+                            if case:
+                                return case_config
+                            else:
+                                continue
                     except:
                         return config
                 else:
