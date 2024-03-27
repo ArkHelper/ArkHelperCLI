@@ -23,7 +23,9 @@ from line_profiler import LineProfiler  # do not remove this. It's needed by mai
 import var
 
 
-def init(main_path, verbose):
+def init(main_path):
+    mode, verbose = parse_arg()
+    
     var.start_time = datetime.now()
     var.cli_env = Path(main_path, '../')
     var.data_path = var.cli_env / 'Data'
@@ -41,6 +43,9 @@ def init(main_path, verbose):
     var.verbose = verbose
 
     mk_CLI_dir()
+    logging.basicConfig(level=logging.DEBUG, handlers=get_logging_handlers())
+
+    return mode
 
 
 def mk_CLI_dir():

@@ -3,10 +3,7 @@ from Libs.utils import *
 from Libs.test import test
 from Libs.maa_runner import run
 
-mode, verbose = parse_arg()
-
-init(main_path=__file__, verbose=verbose)
-logging.basicConfig(level=logging.DEBUG, handlers=get_logging_handlers())
+mode = init(main_path=__file__)
 
 if __name__ == '__main__':
     logging.info(f'CLI started up at {var.cli_env}')
@@ -16,18 +13,13 @@ if __name__ == '__main__':
     logging.debug(f'With personal config {var.personal_configs}')
 
     try:
-        entrance = None
-        if mode == 'test':
-            entrance = test
-        elif mode == 'run':
-            entrance = run
-
-        if var.verbose and False:
-            profile = LineProfiler(entrance)
-            profile.runcall(entrance)
-            profile.print_stats()
-        else:
-            entrance()
+        if entrance := locals().get(mode, None):
+            if var.verbose and False:
+                profile = LineProfiler(entrance)
+                profile.runcall(entrance)
+                profile.print_stats()
+            else:
+                entrance()
 
         logging.info(f'CLI ready to exit')
 
