@@ -13,15 +13,12 @@ if __name__ == '__main__':
     logging.debug(f'With personal config {var.personal_configs}')
 
     try:
-        if entrance := locals().get(mode, None):
-            if var.verbose and False:
-                profile = LineProfiler(entrance)
-                profile.runcall(entrance)
-                profile.print_stats()
-            else:
-                entrance()
+        entrance = locals()[mode]
+        if var.verbose:
+            run_with_LineProfiler(entrance)
+        else:
+            entrance()
 
         logging.info(f'CLI ready to exit')
-
     except Exception as e:
         logging.critical(f'An unexpected error was occured when running: {e}', exc_info=True)

@@ -14,6 +14,7 @@ import requests
 import yaml
 import pytz
 import colorlog
+from io import StringIO
 from urllib.parse import quote
 from typing import Callable
 from pathlib import Path
@@ -25,7 +26,7 @@ import var
 
 def init(main_path):
     mode, verbose = parse_arg()
-    
+
     var.start_time = datetime.now()
     var.cli_env = Path(main_path, '../')
     var.data_path = var.cli_env / 'Data'
@@ -55,6 +56,17 @@ def mk_CLI_dir():
     var.static_path.mkdir(exist_ok=True)
     var.cache_path.mkdir(exist_ok=True)
     var.maa_usrdir_path.mkdir(exist_ok=True)
+
+
+def run_with_LineProfiler(func, *args, **kwargs):
+    profile = LineProfiler(func)
+    result = profile.runcall(func, *args, **kwargs)
+
+    stream = StringIO()
+    profile.print_stats(stream=stream)
+
+    logging.debug(stream.getvalue())
+    return result
 
 
 def web_hook(event, report=None):
