@@ -6,6 +6,7 @@ import logging
 import random
 import threading
 import time
+import tqdm
 import psutil
 import argparse
 import subprocess
@@ -444,7 +445,7 @@ def update_nav():
     pass
 
 
-def run_in_thread(func: Callable, args: tuple, max_try_time=5, timeout=10, logger=logging.root):
+def try_run(func: Callable, args: tuple, max_try_time=5, timeout=10, logger=logging.root):
     func_with_arg_str = f"{func.__name__}{str(args)}"
 
     class ThreadWithException(threading.Thread):
@@ -494,10 +495,15 @@ def run_in_thread(func: Callable, args: tuple, max_try_time=5, timeout=10, logge
 def download(url, path):
     path = str(path)
     logging.debug(f'Start to download from {url} to {path}')
-    response = requests.get(url)
+    response = requests.get(url, stream=True)
+    total_size = int(response.headers.get('content-length', 0))
+
     if response.status_code == 200:
-        with open(path, 'wb') as file:
-            file.write(response.content)
+        with open(path, 'wb') as file, tqdm.tqdm(
+                total=total_size, unit='B', unit_scale=True, desc=path, ascii=True) as progress_bar:
+            for data in response.iter_content(chunk_size=4096):
+                file.write(data)
+                progress_bar.update(len(data))
         return path
     else:
         raise Exception(f'Download failed: {response.status_code}')

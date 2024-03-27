@@ -126,7 +126,7 @@ def start_task_process(process_static_params, process_shared_status):
                     else:
                         raise Exception(f'The newest version is {newest} but the local version is {local}. The task cannot be run')
 
-        update()
+        try_run(update, (), 2, 3000)
 
         remain_time = var.global_config.get('max_task_waiting_time', 3600)
         execute, execute_disabled_by = True, ''
