@@ -378,11 +378,13 @@ class ArknightsAPI:
 
     def get_newest_apk_link() -> str:
         if not ArknightsAPI._newest_link:
-            ArknightsAPI._newest_link = requests.get(
+            link1 = requests.get(
                 "https://ak.hypergryph.com/downloads/android_lastest",
                 allow_redirects=False,
                 timeout=10,
             ).headers["Location"]
+            link2 = requests.get(link1, allow_redirects=False).headers["Location"]
+            ArknightsAPI._newest_link = link2
         return ArknightsAPI._newest_link
 
 
