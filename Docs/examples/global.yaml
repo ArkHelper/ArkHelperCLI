@@ -1,5 +1,6 @@
-adb_path: C:\App\platform-tools\adb.exe # both absolute and relative is ok for a path. For relative path, ./ = main.py/../
-                                        # you can just leave "adb" if it's already in the %PATH%.
+adb_path:
+  C:\App\platform-tools\adb.exe # both absolute and relative is ok for a path. For relative path, ./ = main.py/../
+  # you can just leave "adb" if it's already in the %PATH%.
 maa_path: C:\App\MAA
 restart_adb: false # optional
 max_task_waiting_time: 3600 # second, optional
@@ -9,19 +10,19 @@ devices:
     process_name: mumu # Accept a string or a list. A string means using internal logic of killing and starting. It is recommended to use this method.
   - alias: mumu1
     emulator_address: 127.0.0.1:16416
-    process_name: # Accept a string or a list. A list means killing all processes in it. 
+    process_name: # Accept a string or a list. A list means killing all processes in it.
       - MuMuVMMHeadless.exe
       - MuMuPlayer.exe
 devices_running_limit: 1 # The maximum number of devices running at the same time, default is 10
 task-device: # Use unique identifier(rules in personal.yaml) to match the device corresponding to the task, optional
   Official4567: mumu
   YoStarEN: mumu
-webhook:  
-# optional, see HookConfig in https://github.com/EvATive7/easywebhooker/blob/main/easywebhooker/__init__.py
-# built-in variable is available for body and url. Including:
-# #{event} : str, which triggers webhook, value in ['run-finished', 'run-failed', 'run-succeed']
-# #{report} : str, report text after the end of run, available when run-finished, run-failed, run-succeed
-  - when: 'run-finished'
+webhook:
+  # optional, see HookConfig in https://github.com/EvATive7/easywebhooker/blob/main/easywebhooker/__init__.py
+  # built-in variable is available for body and url. Including:
+  # #{event} : str, which triggers webhook, value in ['run-finished', 'run-failed', 'run-succeed', 'run-started']
+  # #{report} : str, report text after the end of run, available when run-finished, run-failed, run-succeed
+  - when: "run-finished"
     method: POST
     url: http://127.0.0.1:9888/webhook/f6aca3f7dc074d8c882184c71be3899d
     body: >

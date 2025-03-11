@@ -80,6 +80,8 @@ def run():
     ]
     running_result = {task.get("hash"): None for task in var.tasks}
     device_count_limit = var.global_config.get("devices_running_limit", 10)
+    easywebhooker.configure(var.global_config.get("webhook", []))
+    easywebhooker.webhook("run-started")
 
     ...
 
@@ -181,7 +183,6 @@ def run():
     report = f"""{report}
 
 {var.start_time.strftime('%Y-%m-%d %H:%M:%S')} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"""
-    easywebhooker.configure(var.global_config.get("webhook", []))
     if not succeed:
         easywebhooker.webhook("run-failed", report=report)
     else:
