@@ -1,6 +1,5 @@
 import json
 import logging
-import multiprocessing
 import os
 import pathlib
 import threading
@@ -83,7 +82,7 @@ class Device:
         self.kill_after_end = dev_config.get("kill_after_end", True)
         self._process = dev_config.get("process")
         self.logger = logging.getLogger(str(self))
-        self.current_status = multiprocessing.Manager().dict()
+        self.current_status = {}
         self.current_status["server"] = None
         self.adb = ADB(self.addr)
 

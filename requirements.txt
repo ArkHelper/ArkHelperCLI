@@ -9,3 +9,4 @@ fake-useragent
 easywebhooker
 bs4
 pre-commit
+pywin32

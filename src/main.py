@@ -13,7 +13,7 @@ if __name__ == "__main__":
     logging.debug(f"With personal config {var.personal_configs}")
 
     try:
-        entrance = locals()[mode]
+        entrance = {m.__name__: m for m in [run, test]}[mode]
         if var.verbose and False:
             run_with_LineProfiler(entrance)
         else:

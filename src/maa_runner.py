@@ -1,8 +1,8 @@
 import copy
 import logging
-import multiprocessing
 import time
 from dataclasses import dataclass
+from threading import Thread
 
 import easywebhooker
 from indent_concluder import Item as ConcluderItem
@@ -64,7 +64,7 @@ def run():
     @dataclass
     class DeviceStatus:
         device: Device
-        process: multiprocessing.Process | None
+        process: Thread | None
         process_static_params: dict | None
         process_shared_status: dict | None
         finished: bool
@@ -148,8 +148,8 @@ def run():
                                 "task": distribute_task,
                                 "device": status.device,
                             }
-                            process_shared_status = multiprocessing.Manager().dict()
-                            process = multiprocessing.Process(
+                            process_shared_status = {}
+                            process = threading.Thread(
                                 target=start_task_process,
                                 args=(
                                     process_static_params,
