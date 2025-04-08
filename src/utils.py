@@ -6,6 +6,7 @@ import logging
 import os
 import random
 import subprocess
+import sys
 import threading
 import time
 from datetime import datetime, timedelta, timezone
@@ -146,7 +147,7 @@ def parse_arg():
     args = parser.parse_args()
     if not args.subcommand:
         parser.print_help()
-        exit(0)
+        sys.exit(1)
 
     mode = args.subcommand
     verbose = args.verbose
