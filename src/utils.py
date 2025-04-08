@@ -18,7 +18,6 @@ import colorlog
 import psutil
 import pytz
 import requests
-import tqdm
 import yaml
 from line_profiler import (  # do not remove this. It's needed by main.py, passing by import *
     LineProfiler,
@@ -501,14 +500,37 @@ def download(url, path):
     logging.debug(f"Start to download from {url} to {path}")
     response = requests.get(url, stream=True)
     total_size = int(response.headers.get("content-length", 0))
+    downloaded_size = 0
 
     if response.status_code == 200:
-        with open(path, "wb") as file, tqdm.tqdm(
-            total=total_size, unit="B", unit_scale=True, desc=path, ascii=True
-        ) as progress_bar:
-            for data in response.iter_content(chunk_size=4096):
+        with open(path, "wb") as file:
+            start_time = time.time()  # 记录下载开始时间
+            for data in response.iter_content(chunk_size=4096000 * 3):
                 file.write(data)
-                progress_bar.update(len(data))
+                downloaded_size += len(data)
+
+                # 计算下载进度相关信息
+                total_mb = byte_to_MB(total_size) if total_size > 0 else 0
+                downloaded_mb = byte_to_MB(downloaded_size)
+                remaining_mb = total_mb - downloaded_mb
+                progress = (downloaded_size / total_size) * 100 if total_size > 0 else 0
+
+                # 计算实时速度
+                current_time = time.time()
+                elapsed_time = current_time - start_time  # 当前与上次记录的时间差
+                speed = downloaded_mb / max(elapsed_time, 0.00001)
+
+                # 格式化日志信息
+                log_message = (
+                    f"{progress:.2f}% | "
+                    f"{downloaded_mb:.2f} MB=>"
+                    f"{remaining_mb:.2f} MB=>"
+                    f"{total_mb:.2f} MB | "
+                    f"{speed:.2f} MB/s"
+                )
+                logging.debug(log_message)
+
+        logging.debug("Download completed")
         return path
     else:
         raise Exception(f"Download failed: {response.status_code}")
