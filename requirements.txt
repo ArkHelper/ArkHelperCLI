@@ -9,3 +9,4 @@ fake-useragent
 tqdm
 easywebhooker
 bs4
+pre-commit

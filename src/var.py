@@ -8,7 +8,7 @@ log_path: Path
 static_path: Path
 cache_path: Path
 maa_env: Path
-maa_usrdir_path:Path
+maa_usrdir_path: Path
 
 global_config: dict
 personal_configs: list[dict]

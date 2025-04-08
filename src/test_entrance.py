@@ -1,8 +1,9 @@
-import time
 import os
+import time
+
 import var
-from utils import *
 from maa_runner import run
+from utils import *
 
 
 def test():

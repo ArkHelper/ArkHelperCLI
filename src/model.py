@@ -1,12 +1,13 @@
-from dataclasses import dataclass
+import json
+import logging
 import multiprocessing
 import os
 import pathlib
 import threading
 import time
-import logging
-import json
-from typing import Optional, Union, TypeVar
+from dataclasses import dataclass
+from typing import Optional, TypeVar, Union
+
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 

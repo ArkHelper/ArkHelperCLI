@@ -1,18 +1,17 @@
+import copy
+import logging
+import multiprocessing
+import time
+from dataclasses import dataclass
+
+import easywebhooker
+from indent_concluder import Item as ConcluderItem
+
 import var
-from utils import *
 from model import *
 from process_runner import start_task_process
 from task_planner import *
-
-
-import logging
-import time
-import copy
-import multiprocessing
-import easywebhooker
-from dataclasses import dataclass
-
-from indent_concluder import Item as ConcluderItem
+from utils import *
 
 
 def do_conclusion():
