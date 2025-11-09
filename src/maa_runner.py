@@ -174,7 +174,11 @@ def run():
             logging.debug(f"All devices ended. Ready to exit")
             break
         else:
-            time.sleep(2)
+            try:
+                time.sleep(2)
+            except InterruptedError as e:
+                logger.debug(f"InterruptedError: {e}")
+                sys.exit(1)
 
     report = get_report(running_result)
     succeed = report.succeed

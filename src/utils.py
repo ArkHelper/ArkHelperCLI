@@ -506,7 +506,7 @@ def download(url, path):
     if response.status_code == 200:
         with open(path, "wb") as file:
             start_time = time.time()  # 记录下载开始时间
-            for data in response.iter_content(chunk_size=4096000 * 3):
+            for data in response.iter_content(chunk_size=4096000):
                 file.write(data)
                 downloaded_size += len(data)
 
