@@ -20,9 +20,6 @@ import psutil
 import pytz
 import requests
 import yaml
-from line_profiler import (  # do not remove this. It's needed by main.py, passing by import *
-    LineProfiler,
-)
 
 import var
 
@@ -59,17 +56,6 @@ def mk_CLI_dir():
     var.static_path.mkdir(exist_ok=True)
     var.cache_path.mkdir(exist_ok=True)
     var.maa_usrdir_path.mkdir(exist_ok=True)
-
-
-def run_with_LineProfiler(func, *args, **kwargs):
-    profile = LineProfiler(func)
-    result = profile.runcall(func, *args, **kwargs)
-
-    stream = StringIO()
-    profile.print_stats(stream=stream)
-
-    logging.debug(stream.getvalue())
-    return result
 
 
 def convert_str_to_legal_filename_windows(filename):

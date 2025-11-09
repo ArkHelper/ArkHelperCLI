@@ -14,10 +14,7 @@ if __name__ == "__main__":
 
     try:
         entrance = {m.__name__: m for m in [run, test]}[mode]
-        if var.verbose and False:
-            run_with_LineProfiler(entrance)
-        else:
-            entrance()
+        entrance()
 
         logging.info(f"CLI ready to exit")
     except Exception as e:
