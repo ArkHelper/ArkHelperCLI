@@ -236,8 +236,9 @@ class AsstProxy:
 
         if type == "Fight":
             stage = config["stage"]
-            standby_stage = config["standby_stage"]
-            config.pop("standby_stage")
+            standby_stage = config.get("standby_stage")
+            if standby_stage:
+                config.pop("standby_stage")
             fight_ok = True
             fight_reason = ""
 
