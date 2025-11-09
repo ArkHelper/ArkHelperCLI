@@ -247,9 +247,8 @@ class AsstProxy:
 
             try:
                 if type == "Fight":
-                    if i == 0:
-                        config["stage"] = stage
-                    else:
+                    config["stage"] = stage
+                    if i != 0 and standby_stage:
                         config["stage"] = standby_stage
 
                 self.add_maatask(type, config)
